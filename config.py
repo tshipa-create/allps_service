@@ -1,0 +1,25 @@
+from os import environ, path
+from dotenv import load_dotenv
+
+working_directory = path.dirname(__file__)
+dotenv_path = path.join(working_directory, ".env")
+# Overwrite existing environment variables with values from .env file
+# Workaround as I couldn't get the .env envrionment variables to laod changes properly in the IDE
+load_dotenv(dotenv_path, override=True)
+
+SF_ACCOUNT = environ["SF_ACCOUNT"]
+SF_USER = environ["SF_USER"]
+SF_PASSWORD = environ["SF_PASSWORD"]
+SF_DATABASE = environ["SF_DATABASE_NAME"]
+
+SLACK_TIMEOUT = int(environ["SLACK_TIMEOUT"])
+ENABLE_SLACK_NOTIFICATIONS = bool(environ.get("ENABLE_SLACK_NOTIFICATIONS", False).lower() == "true")
+
+ALLPS_HOST = environ["ALLPS_HOST"]
+ALLPS_USER = environ["ALLPS_USER"]
+ALLPS_PASSWORD = environ["ALLPS_PASSWORD"]
+ALLPS_MACHINE_NAME = environ["ALLPS_MACHINE_NAME"]
+ALLPS_USER_IF = environ["ALLPS_USER_IF"]
+ALLPS_INTEGRATOR = environ["ALLPS_INTEGRATOR"]
+ALLPS_PRODUCT = environ["ALLPS_PRODUCT"]
+ALLPS_PRODUCT_VERSION = environ["ALLPS_PRODUCT_VERSION"]
