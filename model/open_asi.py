@@ -1,4 +1,5 @@
 import xmltodict
+from app_logging import logObject
 
 
 class OpenAsi:
@@ -29,64 +30,80 @@ class OpenAsi:
     def xml_response_to_dict(self, xml_response: str):
         return xmltodict.parse(xml_response)
 
+    def get_reply_code_and_message(self, xml_response: str):
+        response_dict = self.xml_response_to_dict(xml_response)
+        reply_code = response_dict["responses"]["OpenAsi"]["reply_cd"]
+        reply_message = response_dict["responses"]["OpenAsi"]["reply_str"]
+        return reply_code, reply_message
+
 
 class OpenAsiResponseParser:
-    def __init__(self, response_xml: dict):
-        # TODO: do we need to add headers as well?
-        self.request_xml = None
+    def __init__(self, response_xml: str):
         self.response_xml = response_xml
         self.response_dict = xmltodict.parse(response_xml)
-        self.add_clt_acc = self.response_dict["responses"]["OpenAsi"]["add_clt_acc"]
-        self.add_clt_pmt = self.response_dict["responses"]["OpenAsi"]["add_clt_pmt"]
-        self.bank_inscription = self.response_dict["responses"]["OpenAsi"]["bank_inscription"]
-        self.branch = self.response_dict["responses"]["OpenAsi"]["branch"]
-        self.branch_desc = self.response_dict["responses"]["OpenAsi"]["branch_desc"]
-        self.can_contract = self.response_dict["responses"]["OpenAsi"]["can_contract"]
-        self.can_inst = self.response_dict["responses"]["OpenAsi"]["can_inst"]
-        self.can_wal_link = self.response_dict["responses"]["OpenAsi"]["can_wal_link"]
-        self.chg_ct_status = self.response_dict["responses"]["OpenAsi"]["chg_ct_status"]
-        self.chg_dt_adjust = self.response_dict["responses"]["OpenAsi"]["chg_dt_adjust"]
-        self.chg_inst_act_dt = self.response_dict["responses"]["OpenAsi"]["chg_inst_act_dt"]
-        self.chg_inst_amt = self.response_dict["responses"]["OpenAsi"]["chg_inst_amt"]
-        self.chg_track = self.response_dict["responses"]["OpenAsi"]["chg_track"]
-        self.coll_fields_type = self.response_dict["responses"]["OpenAsi"]["coll_fields_type"]
-        self.cr_acc_status = self.response_dict["responses"]["OpenAsi"]["cr_acc_status"]
-        self.cr_acol = self.response_dict["responses"]["OpenAsi"]["cr_acol"]
-        self.cr_acol_auth = self.response_dict["responses"]["OpenAsi"]["cr_acol_auth"]
-        self.cr_acol_offline = self.response_dict["responses"]["OpenAsi"]["cr_acol_offline"]
-        self.cr_acol_rt = self.response_dict["responses"]["OpenAsi"]["cr_acol_rt"]
-        self.cr_aedo = self.response_dict["responses"]["OpenAsi"]["cr_aedo"]
-        self.cr_card_acol = self.response_dict["responses"]["OpenAsi"]["cr_card_acol"]
-        self.cr_card_eft = self.response_dict["responses"]["OpenAsi"]["cr_card_eft"]
-        self.cr_card_geft = self.response_dict["responses"]["OpenAsi"]["cr_card_geft"]
-        self.cr_card_naedo = self.response_dict["responses"]["OpenAsi"]["cr_card_naedo"]
-        self.cr_card_seft = self.response_dict["responses"]["OpenAsi"]["cr_card_seft"]
-        self.cr_eft = self.response_dict["responses"]["OpenAsi"]["cr_eft"]
-        self.cr_geft = self.response_dict["responses"]["OpenAsi"]["cr_geft"]
-        self.cr_naedo = self.response_dict["responses"]["OpenAsi"]["cr_naedo"]
-        self.cr_pre_create = self.response_dict["responses"]["OpenAsi"]["cr_pre_create"]
-        self.cr_seft = self.response_dict["responses"]["OpenAsi"]["cr_seft"]
-        self.cr_wallet = self.response_dict["responses"]["OpenAsi"]["cr_wallet"]
-        self.def_acc_type = self.response_dict["responses"]["OpenAsi"]["def_acc_type"]
-        self.def_ct_status = self.response_dict["responses"]["OpenAsi"]["def_ct_status"]
-        self.def_frequency = self.response_dict["responses"]["OpenAsi"]["def_frequency"]
-        self.def_ifee_type = self.response_dict["responses"]["OpenAsi"]["def_ifee_type"]
-        self.def_prom_term = self.response_dict["responses"]["OpenAsi"]["def_prom_term"]
-        self.def_track_cd = self.response_dict["responses"]["OpenAsi"]["def_track_cd"]
-        self.def_track_days = self.response_dict["responses"]["OpenAsi"]["def_track_days"]
-        self.def_wal_sponsor = self.response_dict["responses"]["OpenAsi"]["def_wal_sponsor"]
-        self.guid = self.response_dict["responses"]["OpenAsi"]["guid"]
-        self.integrator = self.response_dict["responses"]["OpenAsi"]["integrator"]
-        self.link_wal = self.response_dict["responses"]["OpenAsi"]["link_wal"]
-        self.machine = self.response_dict["responses"]["OpenAsi"]["machine"]
-        self.org = self.response_dict["responses"]["OpenAsi"]["org"]
-        self.product = self.response_dict["responses"]["OpenAsi"]["product"]
-        self.pwd = self.response_dict["responses"]["OpenAsi"]["pwd"]
-        self.recall_inst = self.response_dict["responses"]["OpenAsi"]["recall_inst"]
-        self.reply_cd = self.response_dict["responses"]["OpenAsi"]["reply_cd"]
-        self.reply_str = self.response_dict["responses"]["OpenAsi"]["reply_str"]
-        self.response = self.response_dict["responses"]["OpenAsi"]["response"]
-        self.responseText = self.response_dict["responses"]["OpenAsi"]["responseText"]
-        self.uid = self.response_dict["responses"]["OpenAsi"]["uid"]
-        self.user_if = self.response_dict["responses"]["OpenAsi"]["user_if"]
-        self.version = self.response_dict["responses"]["OpenAsi"]["version"]
+        self.extract_values()
+
+    def extract_values(self):
+        # TODO: remove unnecessary fields
+        try:
+            open_asi_info = self.response_dict.get("responses", {}).get("OpenAsi", {})
+            fields = [
+                "add_clt_acc",
+                "add_clt_pmt",
+                "bank_inscription",
+                "branch",
+                "branch_desc",
+                "can_contract",
+                "can_inst",
+                "can_wal_link",
+                "chg_ct_status",
+                "chg_dt_adjust",
+                "chg_inst_act_dt",
+                "chg_inst_amt",
+                "chg_track",
+                "coll_fields_type",
+                "cr_acc_status",
+                "cr_acol",
+                "cr_acol_auth",
+                "cr_acol_offline",
+                "cr_acol_rt",
+                "cr_aedo",
+                "cr_card_acol",
+                "cr_card_eft",
+                "cr_card_geft",
+                "cr_card_naedo",
+                "cr_card_seft",
+                "cr_eft",
+                "cr_geft",
+                "cr_naedo",
+                "cr_pre_create",
+                "cr_seft",
+                "cr_wallet",
+                "def_acc_type",
+                "def_ct_status",
+                "def_frequency",
+                "def_ifee_type",
+                "def_prom_term",
+                "def_track_cd",
+                "def_track_days",
+                "def_wal_sponsor",
+                "guid",
+                "integrator",
+                "link_wal",
+                "machine",
+                "org",
+                "product",
+                "pwd",
+                "recall_inst",
+                "reply_cd",
+                "reply_str",
+                "response",
+                "responseText",
+                "uid",
+                "user_if",
+                "version",
+            ]
+            for field in fields:
+                setattr(self, field, open_asi_info.get(field, None))
+        except Exception as e:
+            logObject.error("Error extracting values from OpenAsiResponseParser: %s", e)

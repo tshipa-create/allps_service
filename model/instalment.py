@@ -1,4 +1,5 @@
 import xmltodict
+from app_logging import logObject
 
 
 class GetInstalment:
@@ -23,7 +24,7 @@ class GetInstalment:
             </GetInstalment>
         </methods>
         """
-        
+
     def xml_response_to_dict(self, xml_response: str):
         return xmltodict.parse(xml_response)
 
@@ -32,3 +33,35 @@ class GetInstalment:
         reply_code = response_dict["responses"]["GetInstalment"]["reply_cd"]
         reply_message = response_dict["responses"]["GetInstalment"]["reply_str"]
         return reply_code, reply_message
+
+
+class GetInstalmentResponseParser:
+    def __init__(self, response_xml: str):
+        self.response_xml = response_xml
+        self.response_dict = xmltodict.parse(response_xml)
+        self.extract_values()
+
+    def extract_values(self):
+        # TODO: remove unnecessary fields
+        try:
+            instalment_info = self.response_dict.get("responses", {}).get("GetInstalment", {})
+            fields = [
+                "amount",
+                "branch_cd",
+                "disputable",
+                "guid",
+                "ifee_inst_amt",
+                "inst_dt",
+                "inst_num",
+                "org_cd",
+                "pmt_stream",
+                "promissory_id",
+                "reply_cd",
+                "reply_str",
+                "status",
+                "tracking_cd",
+            ]
+            for field in fields:
+                setattr(self, field, instalment_info.get(field))
+        except Exception as e:
+            logObject.error("Error extracting values from GetInstalmentResponseParser: %s", e)
