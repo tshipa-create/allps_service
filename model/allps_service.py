@@ -37,6 +37,7 @@ class AllpsService:
             method_name = cls.get_method_name(xml_req)
             xml_resp = client.request_data(xml_req, method_name)
             resp_code, resp_msg = util.get_reply_code_and_message(xml_resp, method_name)
+            logObject.warning('ALLPS Authentication response_code: "%s", response_message: "%s"', resp_code, resp_msg)
             save_allps_response_to_snowflake(resp_code, resp_msg, method_name, xml_req, xml_resp)
             cls._auth_response_parser = open_asi.OpenAsiResponseParser(xml_resp)
             return cls._auth_response_parser
@@ -60,6 +61,7 @@ class AllpsService:
         method_name = cls.get_method_name(xml_req)
         xml_resp = cls.get_client().request_data(xml_req, method_name)
         resp_code, resp_msg = util.get_reply_code_and_message(xml_resp, method_name)
+        logObject.warning('ALLPS Get_Instalment response_code: "%s", response_message: "%s"', resp_code, resp_msg)
         save_allps_response_to_snowflake(resp_code, resp_msg, method_name, xml_req, xml_resp)
         response_parser = instalment.GetInstalmentResponseParser(xml_resp)
         return response_parser
@@ -83,6 +85,7 @@ class AllpsService:
         method_name = cls.get_method_name(xml_req)
         xml_resp = cls.get_client().request_data(xml_req, method_name)
         resp_code, resp_msg = util.get_reply_code_and_message(xml_resp, method_name)
+        logObject.warning("ALLPS Edit_Instalment response_code: %s, response_message: %s", resp_code, resp_msg)
         save_allps_response_to_snowflake(resp_code, resp_msg, method_name, xml_req, xml_resp)
         response_parser = edit_instalment.EditInstalmentResponseParser(xml_resp)
         return response_parser

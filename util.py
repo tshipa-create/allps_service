@@ -29,7 +29,19 @@ def check_instalment_status(current_status: str, check_status: str):
     if current_status == check_status:
         logObject.info("Instalment status as expected: %s", check_status)
         return True
-    logObject.error(
+    logObject.warning(
         "Instalment status not as expected, current_status: %s, expected_status: %s", current_status, check_status
     )
     return False
+
+def installments_statistics_from_processings(total_installments: int, edited_installments: int):
+    if total_installments == 0:
+        logObject.warning("RUN STATISTICS: No instalments to edit")
+    elif total_installments == edited_installments:
+        logObject.warning("RUN STATISTICS: All instalments were edited")
+    elif total_installments != edited_installments:
+        logObject.warning(
+            "RUN STATISTICS: Mismatch between total instalments: %d and edited instalments: %d", total_installments, edited_installments
+        )
+    else:
+        logObject.warning("RUN STATISTICS: This runs statistics possibility is not covered")

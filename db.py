@@ -61,6 +61,6 @@ def save_allps_response_to_snowflake(
             response_xml,
         )
         with setup_snowflake_connection() as sf_connection:
-            sf_connection.insert_into_table(insert_sql, data)
+            sf_connection.insert_into_table(insert_sql, data, config.SF_ALLPS_XML_LOG_TABLE)
     except Exception as e:
         logObject.error("Error saving ALLPS response to Snowflake: %s", e)

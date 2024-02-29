@@ -32,7 +32,7 @@ class EditInstalment:
 
     def xml_response_to_dict(self, xml_response: str):
         return xmltodict.parse(xml_response)
-    
+
 
 class EditInstalmentResponseParser:
     def __init__(self, response_xml: str):

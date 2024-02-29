@@ -1,25 +1,50 @@
 from model.allps_service import AllpsService
-from icecream import ic
 import util
+import pandas as pd
+from app_logging import logObject
+
+EXPECTED_INSTALMENT_STATUS = "INCOMPLETE"
+
+# TODO: maybe check that installment date is not in future
+
+
+def main():
+    allps_service_instance = AllpsService()
+    allps_service_instance.authenticate()
+    # TODO: replace with actual data. With from db.fetch_retry_loans_data()
+    df = pd.DataFrame(
+        {"PROMISSORY_ID": ["00004C40F2", "00004C40F2"], "INST_NUM": [1, 18], "NEW_ACTION_DT": ["2024032", "20240313"]}
+    )
+    logObject.warning("Starting process of editing instalments...")
+    count_edit_instalments = 0
+    for index, row in df.iterrows():
+        logObject.warning("-" * 100)
+        logObject.warning("Processing row: %s", index + 1)
+        promissory_id = row["PROMISSORY_ID"]
+        install_num = row["INST_NUM"]
+        new_action_dt = row["NEW_ACTION_DT"]
+        logObject.warning("Getting instalment for promissory_id: %s, inst_num: %s", promissory_id, install_num)
+        get_instalment_response_parser = allps_service_instance.get_instalment(
+            promissory_id=promissory_id, inst_num=install_num
+        )
+        is_instalment_status_valid = util.check_instalment_status(
+            get_instalment_response_parser.status, EXPECTED_INSTALMENT_STATUS
+        )
+        if not is_instalment_status_valid:
+            logObject.warning(
+                "Instalment status is not %s, for promissory_id: %s, inst_num: %s. SKIPPING edit_instalment...",
+                EXPECTED_INSTALMENT_STATUS,
+                promissory_id,
+                install_num,
+            )
+            continue
+        logObject.warning("Editing instalment for promissory_id: %s, inst_num: %s...", promissory_id, install_num)
+        allps_service_instance.edit_instalment(
+            promissory_id=promissory_id, inst_num=install_num, new_action_dt=new_action_dt
+        )
+        count_edit_instalments += 1
+    util.installments_statistics_from_processings(len(df), count_edit_instalments)
+
 
 if __name__ == "__main__":
-    allps_service_instance = AllpsService()
-    open_asi_auth_response_parser = allps_service_instance.authenticate()
-    ic(open_asi_auth_response_parser.response_dict)
-    promissory_id = "00004C40F2"
-    """    
-    get_instalment_response_parser = allps_service_instance.get_instalment(promissory_id=promissory_id, inst_num=1)
-    ic(get_instalment_response_parser.response_dict)
-    ic(get_instalment_response_parser.status)
-    util.check_instalment_status(get_instalment_response_parser.status, "INCOMPLETE")
-    """
-    print("-------------------------------------------------")
-    get_instalment_response_parser = allps_service_instance.get_instalment(promissory_id=promissory_id, inst_num=21)
-    ic(get_instalment_response_parser.response_dict)
-    ic(get_instalment_response_parser.status)
-    util.check_instalment_status(get_instalment_response_parser.status, "INCOMPLETE")
-    print("-------------------------------------------------")
-    result = allps_service_instance.edit_instalment(promissory_id=promissory_id, inst_num=21, new_action_dt="2024032")
-    ic(result.response_dict)
-    
-    
+    main()

@@ -77,10 +77,10 @@ class SnowflakeConnectionWithSqlalchemy:
             msg = f"Exception occured: {e}, when executing query"
             logObject.error(msg)
 
-    def insert_into_table(self, insert_sql: str, data: dict):
+    def insert_into_table(self, insert_sql: str, data: dict, table_name: str):
         try:
             result = self.snowflake_connection.execute(insert_sql, data)
-            logObject.warning("Row %d inserted into table", result.rowcount)
+            logObject.warning("Row %d inserted into Snowflake table: %s", result.rowcount, table_name)
         except Exception as e:
             msg = f"Exception occured: {e}, when inserting into table"
             logObject.error(msg)
