@@ -30,12 +30,6 @@ class OpenAsi:
     def xml_response_to_dict(self, xml_response: str):
         return xmltodict.parse(xml_response)
 
-    def get_reply_code_and_message(self, xml_response: str):
-        response_dict = self.xml_response_to_dict(xml_response)
-        reply_code = response_dict["responses"]["OpenAsi"]["reply_cd"]
-        reply_message = response_dict["responses"]["OpenAsi"]["reply_str"]
-        return reply_code, reply_message
-
 
 class OpenAsiResponseParser:
     def __init__(self, response_xml: str):

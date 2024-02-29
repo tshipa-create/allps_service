@@ -1,8 +1,10 @@
-from model import service_client, open_asi, instalment
+from model import service_client, open_asi, instalment, edit_instalment
 import config
-from app_logging import logObject
-import xmltodict
 from db import save_allps_response_to_snowflake
+import util
+import xmltodict
+from app_logging import logObject
+
 
 ALLPS_WSDL_URL = f"{config.ALLPS_HOST}?wsdl"
 
@@ -34,8 +36,8 @@ class AllpsService:
             xml_req = open_asi_auth.to_xml()
             method_name = cls.get_method_name(xml_req)
             xml_resp = client.request_data(xml_req, method_name)
-            resp_code, resp_msg = open_asi_auth.get_reply_code_and_message(xml_resp)
-            save_allps_response_to_snowflake(resp_code, resp_msg, xml_req, xml_resp)
+            resp_code, resp_msg = util.get_reply_code_and_message(xml_resp, method_name)
+            save_allps_response_to_snowflake(resp_code, resp_msg, method_name, xml_req, xml_resp)
             cls._auth_response_parser = open_asi.OpenAsiResponseParser(xml_resp)
             return cls._auth_response_parser
         return cls._auth_response_parser
@@ -45,19 +47,44 @@ class AllpsService:
         if cls._auth_response_parser is None:
             cls.authenticate()  # Ensures authentication before proceeding
         open_asi_auth_response_parser = cls._auth_response_parser
-        get_instalments = instalment.GetInstalment(
+        if util.is_auth_guid(open_asi_auth_response_parser.guid) is False:
+            exit(1)
+        get_instalment = instalment.GetInstalment(
             guid=open_asi_auth_response_parser.guid,
             org_cd=open_asi_auth_response_parser.org,
             branch_cd=open_asi_auth_response_parser.branch,
             promissory_id=promissory_id,
             inst_num=inst_num,
         )
-        xml_req = get_instalments.to_xml()
+        xml_req = get_instalment.to_xml()
         method_name = cls.get_method_name(xml_req)
         xml_resp = cls.get_client().request_data(xml_req, method_name)
-        resp_code, resp_msg = get_instalments.get_reply_code_and_message(xml_resp)
-        save_allps_response_to_snowflake(resp_code, resp_msg, xml_req, xml_resp)
+        resp_code, resp_msg = util.get_reply_code_and_message(xml_resp, method_name)
+        save_allps_response_to_snowflake(resp_code, resp_msg, method_name, xml_req, xml_resp)
         response_parser = instalment.GetInstalmentResponseParser(xml_resp)
+        return response_parser
+
+    @classmethod
+    def edit_instalment(cls, promissory_id: str, inst_num: int, new_action_dt: str):
+        if cls._auth_response_parser is None:
+            cls.authenticate()
+        open_asi_auth_response_parser = cls._auth_response_parser
+        if util.is_auth_guid(open_asi_auth_response_parser.guid) is False:
+            exit(1)
+        edit_install = edit_instalment.EditInstalment(
+            guid=open_asi_auth_response_parser.guid,
+            org_cd=open_asi_auth_response_parser.org,
+            branch_cd=open_asi_auth_response_parser.branch,
+            promissory_id=promissory_id,
+            inst_num=inst_num,
+            new_action_dt=new_action_dt,
+        )
+        xml_req = edit_install.to_xml()
+        method_name = cls.get_method_name(xml_req)
+        xml_resp = cls.get_client().request_data(xml_req, method_name)
+        resp_code, resp_msg = util.get_reply_code_and_message(xml_resp, method_name)
+        save_allps_response_to_snowflake(resp_code, resp_msg, method_name, xml_req, xml_resp)
+        response_parser = edit_instalment.EditInstalmentResponseParser(xml_resp)
         return response_parser
 
     @classmethod

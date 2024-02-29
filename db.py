@@ -32,23 +32,35 @@ def fetch_retry_loans_data():  # TODO: Change SQL to right one
         return None
 
 
-def save_allps_response_to_snowflake(resp_code: str, resp_msg: str, request_xml: str, response_xml: str):
+def save_allps_response_to_snowflake(
+    resp_code: str, resp_msg: str, method_name: str, request_xml: str, response_xml: str
+):
     try:
-        df = pd.DataFrame(
-            [
-                {
-                    "REQUEST_DATE_UTC": datetime.utcnow(),
-                    "HOST": config.ALLPS_HOST,
-                    "RESPONSE_CODE": resp_code,
-                    "RESPONSE_MESSAGE": resp_msg,
-                    "REQUEST_XML": request_xml,
-                    "RESPONSE_XML": response_xml,
-                }
-            ]
+        insert_sql = f"""INSERT INTO {config.SF_SCHEMA}.{config.SF_ALLPS_XML_LOG_TABLE}
+        (
+            REQUEST_DATE_UTC,
+            HOST,
+            METHOD_NAME,
+            RESPONSE_CODE,
+            RESPONSE_MESSAGE,
+            REQUEST_XML,
+            RESPONSE_XML
+        )
+        VALUES
+        (
+            %s, %s, %s, %s, %s, %s, %s
+        )
+        """
+        data = (
+            datetime.utcnow(),
+            config.ALLPS_HOST,
+            method_name,
+            resp_code,
+            resp_msg,
+            request_xml,
+            response_xml,
         )
         with setup_snowflake_connection() as sf_connection:
-            sf_connection.create_table_and_insert_data(
-                df=df, schema=config.SF_SCHEMA, table_name=config.SF_ALLPS_XML_LOG_TABLE, if_exists="append"
-            )
+            sf_connection.insert_into_table(insert_sql, data)
     except Exception as e:
         logObject.error("Error saving ALLPS response to Snowflake: %s", e)

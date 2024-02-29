@@ -1,5 +1,4 @@
-from sqlalchemy import create_engine
-from snowflake.connector.pandas_tools import pd_writer
+from sqlalchemy import create_engine, insert
 from app_logging import logObject
 import pandas as pd
 from snowflake.connector.errors import OperationalError
@@ -78,46 +77,12 @@ class SnowflakeConnectionWithSqlalchemy:
             msg = f"Exception occured: {e}, when executing query"
             logObject.error(msg)
 
-    def create_table_and_insert_data(
-        self,
-        df: pd.DataFrame,
-        schema: str,
-        table_name: str,
-        if_exists: str,
-        chunksize=None,
-    ):
+    def insert_into_table(self, insert_sql: str, data: dict):
         try:
-            self.snowflake_connection.execute(f"USE SCHEMA {self.database}.{schema}")
-            if if_exists == "replace":
-                logObject.warning('Rewriting table "%s" to Snowflake database', table_name)
-            elif if_exists == "append":
-                logObject.warning(
-                    'Appending rows to table "%s" to Snowflake schema: "%s"',
-                    table_name,
-                    schema,
-                )
-            else:
-                logObject.error('Unknown if_exists type: "%s"', if_exists)
-
-            def insert_data():
-                df.to_sql(
-                    con=self.snowflake_connection,
-                    name=table_name.lower(),
-                    schema=schema,
-                    if_exists=if_exists,
-                    index=False,
-                    chunksize=chunksize,
-                    method=pd_writer,
-                )
-
-            self.retry_execute(insert_data)
-            logObject.warning(
-                'Rows inserted to Snowflake schema: "%s" and table: "%s"',
-                schema,
-                table_name,
-            )
+            result = self.snowflake_connection.execute(insert_sql, data)
+            logObject.warning("Row %d inserted into table", result.rowcount)
         except Exception as e:
-            msg = f"Exception occured: {e}, when inserting data to Snowflake"
+            msg = f"Exception occured: {e}, when inserting into table"
             logObject.error(msg)
 
     def read_into_dataframe(self, query: str):
