@@ -6,9 +6,9 @@ from app_logging import logObject
 class EditInstalment:
     def __init__(self, guid: str, org_cd: str, branch_cd: str, promissory_id: str, inst_num: int, new_action_dt: str):
         if not 1 <= inst_num <= 999:
-            raise ValueError("inst_num (installment number) must be between 1 and 999")
+            logObject.error("inst_num (installment number) must be between 1 and 999")
         if util.is_valid_date(new_action_dt) is False:
-            raise ValueError("new_action_dt (new action date) must be in the format YYYYMMDD")
+            logObject.error("new_action_dt (new action date) must be in the format YYYYMMDD")
         self.guid = guid
         self.org_cd = org_cd
         self.branch_cd = branch_cd
@@ -45,10 +45,6 @@ class EditInstalmentResponseParser:
         try:
             edit_instalment_info = self.response_dict.get("responses", {}).get("EditInstalment", {})
             fields = [
-                "guid",
-                "org_cd",
-                "branch_cd",
-                "promissory_id",
                 "inst_num",
                 "new_action_dt",
                 "reply_cd",

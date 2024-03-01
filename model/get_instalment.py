@@ -5,7 +5,7 @@ from app_logging import logObject
 class GetInstalment:
     def __init__(self, guid: str, org_cd: str, branch_cd: str, promissory_id: str, inst_num: int):
         if not 1 <= inst_num <= 999:
-            raise ValueError("inst_num (installment number) must be between 1 and 999")
+            logObject.error("inst_num (installment number) must be between 1 and 999")
         self.guid = guid
         self.org_cd = org_cd
         self.branch_cd = branch_cd
@@ -37,24 +37,13 @@ class GetInstalmentResponseParser:
         self.extract_values()
 
     def extract_values(self):
-        # TODO: remove unnecessary fields
         try:
             instalment_info = self.response_dict.get("responses", {}).get("GetInstalment", {})
             fields = [
-                "amount",
-                "branch_cd",
-                "disputable",
-                "guid",
-                "ifee_inst_amt",
                 "inst_dt",
-                "inst_num",
-                "org_cd",
-                "pmt_stream",
-                "promissory_id",
                 "reply_cd",
                 "reply_str",
                 "status",
-                "tracking_cd",
             ]
             for field in fields:
                 setattr(self, field, instalment_info.get(field, None))

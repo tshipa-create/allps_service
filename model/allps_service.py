@@ -1,4 +1,4 @@
-from model import service_client, open_asi, instalment, edit_instalment
+from model import service_client, open_asi, edit_instalment, get_instalment
 import config
 from db import save_allps_response_to_snowflake
 import util
@@ -50,20 +50,20 @@ class AllpsService:
         open_asi_auth_response_parser = cls._auth_response_parser
         if util.is_auth_guid(open_asi_auth_response_parser.guid) is False:
             exit(1)
-        get_instalment = instalment.GetInstalment(
+        get_install = get_instalment.GetInstalment(
             guid=open_asi_auth_response_parser.guid,
             org_cd=open_asi_auth_response_parser.org,
             branch_cd=open_asi_auth_response_parser.branch,
             promissory_id=promissory_id,
             inst_num=inst_num,
         )
-        xml_req = get_instalment.to_xml()
+        xml_req = get_install.to_xml()
         method_name = cls.get_method_name(xml_req)
         xml_resp = cls.get_client().request_data(xml_req, method_name)
         resp_code, resp_msg = util.get_reply_code_and_message(xml_resp, method_name)
         logObject.warning('ALLPS Get_Instalment response_code: "%s", response_message: "%s"', resp_code, resp_msg)
         save_allps_response_to_snowflake(resp_code, resp_msg, method_name, xml_req, xml_resp)
-        response_parser = instalment.GetInstalmentResponseParser(xml_resp)
+        response_parser = get_instalment.GetInstalmentResponseParser(xml_resp)
         return response_parser
 
     @classmethod

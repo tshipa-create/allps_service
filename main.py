@@ -5,7 +5,8 @@ from app_logging import logObject
 
 EXPECTED_INSTALMENT_STATUS = "INCOMPLETE"
 
-# TODO: maybe check that installment date is not in future
+# TODO: add test for future
+# TODO: Add test for not incomplete status
 
 
 def main():
@@ -27,15 +28,14 @@ def main():
         get_instalment_response_parser = allps_service_instance.get_instalment(
             promissory_id=promissory_id, inst_num=install_num
         )
-        is_instalment_status_valid = util.check_instalment_status(
-            get_instalment_response_parser.status, EXPECTED_INSTALMENT_STATUS
+        is_instalment_info_valid = util.validate_full_instalment_info(
+            get_instalment_response_parser.status,
+            EXPECTED_INSTALMENT_STATUS,
+            get_instalment_response_parser.inst_dt,  # pylint: disable=no-member
         )
-        if not is_instalment_status_valid:
+        if not is_instalment_info_valid:
             logObject.warning(
-                "Instalment status is not %s, for promissory_id: %s, inst_num: %s. SKIPPING edit_instalment...",
-                EXPECTED_INSTALMENT_STATUS,
-                promissory_id,
-                install_num,
+                "Skipping editing instalment for promissory_id: %s, inst_num: %s...", promissory_id, install_num
             )
             continue
         logObject.warning("Editing instalment for promissory_id: %s, inst_num: %s...", promissory_id, install_num)
