@@ -53,3 +53,5 @@ Thumbs.db
 /.env
 /logs
 /tests/__pycache__
+/tests/.coverage
+/tests/htmlcov

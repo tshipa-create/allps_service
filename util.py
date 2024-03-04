@@ -61,5 +61,3 @@ def installments_statistics_from_processings(total_installments: int, edited_ins
             total_installments,
             edited_installments,
         )
-    else:
-        logObject.warning("RUN STATISTICS: This runs statistics possibility is not covered")

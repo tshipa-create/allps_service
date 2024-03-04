@@ -44,13 +44,10 @@ class EditInstalmentResponseParser:
     def extract_values(self):
         try:
             edit_instalment_info = self.response_dict.get("responses", {}).get("EditInstalment", {})
-            fields = [
-                "inst_num",
-                "new_action_dt",
-                "reply_cd",
-                "reply_str",
-            ]
-            for field in fields:
-                setattr(self, field, edit_instalment_info.get(field, None))
+
+            self.inst_num = edit_instalment_info.get("inst_num", None)
+            self.new_action_dt = edit_instalment_info.get("new_action_dt", None)
+            self.reply_cd = edit_instalment_info.get("reply_cd", None)
+            self.reply_str = edit_instalment_info.get("reply_str", None)
         except Exception as e:
             logObject.error("Error extracting values from EditInstalmentResponseParser: %s", e)

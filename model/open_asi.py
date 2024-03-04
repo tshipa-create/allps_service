@@ -40,14 +40,10 @@ class OpenAsiResponseParser:
     def extract_values(self):
         try:
             open_asi_info = self.response_dict.get("responses", {}).get("OpenAsi", {})
-            fields = [
-                "branch",
-                "guid",
-                "org",
-                "reply_cd",
-                "reply_str",
-            ]
-            for field in fields:
-                setattr(self, field, open_asi_info.get(field, None))
+            self.branch = open_asi_info.get("branch", None)
+            self.guid = open_asi_info.get("guid", None)
+            self.org = open_asi_info.get("org", None)
+            self.reply_cd = open_asi_info.get("reply_cd", None)
+            self.reply_str = open_asi_info.get("reply_str", None)
         except Exception as e:
             logObject.error("Error extracting values from OpenAsiResponseParser: %s", e)

@@ -39,13 +39,9 @@ class GetInstalmentResponseParser:
     def extract_values(self):
         try:
             instalment_info = self.response_dict.get("responses", {}).get("GetInstalment", {})
-            fields = [
-                "inst_dt",
-                "reply_cd",
-                "reply_str",
-                "status",
-            ]
-            for field in fields:
-                setattr(self, field, instalment_info.get(field, None))
+            self.inst_dt = instalment_info.get("inst_dt", None)
+            self.status = instalment_info.get("status", None)
+            self.reply_cd = instalment_info.get("reply_cd", None)
+            self.reply_str = instalment_info.get("reply_str", None)
         except Exception as e:
             logObject.error("Error extracting values from GetInstalmentResponseParser: %s", e)
