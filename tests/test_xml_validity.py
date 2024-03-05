@@ -31,7 +31,6 @@ from test_edit_instalment import (
 )
 
 
-# TODO: Add the XML strings from the other test files here.
 class TestXMLValidity(unittest.TestCase):
     def validate_xml_structure(self, xml_string):
         try:
