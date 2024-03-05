@@ -25,6 +25,19 @@ TEST_RESP_REPLY_STR_SUCCESS = "Request successfully completed (0000)"
 TEST_RESP_REPLY_CD_NOT_SUCCESS = "3027"
 TEST_RESP_REPLY_STR_NOT_SUCCESS = "Invalid user name or password (3027)"
 
+TEST_OPEN_ASI_REQUEST_XML = f"""
+                        <methods>
+                            <OpenAsi>
+                                <uid>{TEST_UID}</uid>
+                                <pwd>{TEST_PWD}</pwd>
+                                <machine>{TEST_MACHINE}</machine>
+                                <user_if>{TEST_USER_IF}</user_if>
+                                <integrator>{TEST_INTEGRATOR}</integrator>
+                                <product>{TEST_PRODUCT}</product>
+                                <version>{TEST_VERSION}</version>
+                            </OpenAsi>
+                        </methods>
+                        """
 
 TEST_OPEN_ASI_RESPONSE_XML_SUCCESS = f"""
                                 <responses>
@@ -79,19 +92,7 @@ class TestOpenAsi(unittest.TestCase):
         self.assertEqual(self.open_asi.version, TEST_VERSION)
 
     def test_to_xml(self):
-        expected_xml = f"""
-        <methods>
-            <OpenAsi>
-                <uid>{TEST_UID}</uid>
-                <pwd>{TEST_PWD}</pwd>
-                <machine>{TEST_MACHINE}</machine>
-                <user_if>{TEST_USER_IF}</user_if>
-                <integrator>{TEST_INTEGRATOR}</integrator>
-                <product>{TEST_PRODUCT}</product>
-                <version>{TEST_VERSION}</version>
-            </OpenAsi>
-        </methods>
-        """
+        expected_xml = TEST_OPEN_ASI_REQUEST_XML
         self.assertEqual(self.open_asi.to_xml().strip(), expected_xml.strip())
 
     def test_xml_response_to_dict_successfull(self):
