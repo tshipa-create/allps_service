@@ -3,11 +3,11 @@ import os
 import unittest
 from unittest.mock import patch
 
-
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
 from model.open_asi import OpenAsi, OpenAsiResponseParser
+
 
 TEST_UID = "test_uid"
 TEST_PWD = "test_pwd"
@@ -92,8 +92,8 @@ class TestOpenAsi(unittest.TestCase):
         self.assertEqual(self.open_asi.version, TEST_VERSION)
 
     def test_to_xml(self):
-        expected_xml = TEST_OPEN_ASI_REQUEST_XML
-        self.assertEqual(self.open_asi.to_xml().strip(), expected_xml.strip())
+        expected_xml = normalize_xml(TEST_OPEN_ASI_REQUEST_XML)
+        self.assertEqual(normalize_xml(self.open_asi.to_xml().strip()), expected_xml.strip())
 
     def test_xml_response_to_dict_successfull(self):
         xml_response = TEST_OPEN_ASI_RESPONSE_XML_SUCCESS
@@ -108,11 +108,11 @@ class TestOpenAsi(unittest.TestCase):
                 }
             }
         }
-        self.assertEqual(self.open_asi.xml_response_to_dict(xml_response), expected_dict)
+        self.assertDictEqual(self.open_asi.xml_response_to_dict(xml_response), expected_dict)
 
     def test_xml_response_to_dict_with_invalid_xml(self):
         invalid_xml_response = TEST_OPEN_ASI_RESPONSE_XML_INVALID
-        self.assertEqual(self.open_asi.xml_response_to_dict(invalid_xml_response), {"responses": None})
+        self.assertDictEqual(self.open_asi.xml_response_to_dict(invalid_xml_response), {"responses": None})
 
     def test_xml_response_to_dict_with_error_code(self):
         xml_response = TEST_OPEN_ASI_RESPONSE_XML_ERROR_CODE
@@ -127,7 +127,7 @@ class TestOpenAsi(unittest.TestCase):
                 }
             }
         }
-        self.assertEqual(self.open_asi.xml_response_to_dict(xml_response), expected_dict)
+        self.assertDictEqual(self.open_asi.xml_response_to_dict(xml_response), expected_dict)
 
 
 class TestOpenAsiResponseParser(unittest.TestCase):
@@ -157,6 +157,10 @@ class TestOpenAsiResponseParser(unittest.TestCase):
         self.response_parser.response_dict = None  # This will cause an exception in extract_values
         self.response_parser.extract_values()
         mock_log.error.assert_called_once()
+
+
+def normalize_xml(xml_str):
+    return "".join(xml_str.split())
 
 
 if __name__ == "__main__":

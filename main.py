@@ -5,8 +5,7 @@ from app_logging import logObject
 
 EXPECTED_INSTALMENT_STATUS = "INCOMPLETE"
 
-# TODO: add test for future
-# TODO: Add test for not incomplete status
+# TODO: Add Slack notification as this is important process for business?
 
 
 def main():
@@ -14,7 +13,7 @@ def main():
     allps_service_instance.authenticate()
     # TODO: replace with actual data. With from db.fetch_retry_loans_data()
     df = pd.DataFrame(
-        {"PROMISSORY_ID": ["00004C40F2", "00004C40F2"], "INST_NUM": [1, 18], "NEW_ACTION_DT": ["2024032", "20240313"]}
+        {"PROMISSORY_ID": ["00004C40F2", "00004C40F2"], "INST_NUM": [1, 21], "NEW_ACTION_DT": ["2024032", "20240313"]}
     )
     logObject.warning("Starting process of editing instalments...")
     count_edit_instalments = 0
@@ -44,6 +43,7 @@ def main():
         )
         count_edit_instalments += 1
     util.installments_statistics_from_processings(len(df), count_edit_instalments)
+    allps_service_instance.close_asi()
 
 
 if __name__ == "__main__":

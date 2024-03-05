@@ -14,18 +14,18 @@ class OpenAsi:
 
     def to_xml(self):
         return f"""
-        <methods>
-            <OpenAsi>
-                <uid>{self.uid}</uid>
-                <pwd>{self.pwd}</pwd>
-                <machine>{self.machine}</machine>
-                <user_if>{self.user_if}</user_if>
-                <integrator>{self.integrator}</integrator>
-                <product>{self.product}</product>
-                <version>{self.version}</version>
-            </OpenAsi>
-        </methods>
-        """
+            <methods>
+                <OpenAsi>
+                    <uid>{self.uid}</uid>
+                    <pwd>{self.pwd}</pwd>
+                    <machine>{self.machine}</machine>
+                    <user_if>{self.user_if}</user_if>
+                    <integrator>{self.integrator}</integrator>
+                    <product>{self.product}</product>
+                    <version>{self.version}</version>
+                </OpenAsi>
+            </methods>
+            """
 
     def xml_response_to_dict(self, xml_response: str):
         return xmltodict.parse(xml_response)
@@ -47,3 +47,17 @@ class OpenAsiResponseParser:
             self.reply_str = open_asi_info.get("reply_str", None)
         except Exception as e:
             logObject.error("Error extracting values from OpenAsiResponseParser: %s", e)
+
+
+class CloseAsi:
+    def __init__(self, guid: str):
+        self.guid = guid
+
+    def to_xml(self):
+        return f"""
+        <methods>
+            <CloseAsi>
+                <guid>{self.guid}</guid>
+            </CloseAsi>
+        </methods>
+        """

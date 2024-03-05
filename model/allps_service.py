@@ -90,6 +90,15 @@ class AllpsService:
         response_parser = edit_instalment.EditInstalmentResponseParser(xml_resp)
         return response_parser
 
+    def close_asi(self):
+        close_asi = open_asi.CloseAsi(guid=self._auth_response_parser.guid)
+        xml_req = close_asi.to_xml()
+        method_name = self.get_method_name(xml_req)
+        xml_resp = self.get_client().request_data(xml_req, method_name)
+        resp_code, resp_msg = util.get_reply_code_and_message(xml_resp, method_name)
+        logObject.warning("ALLPS Close_asi response_code: %s, response_message: %s", resp_code, resp_msg)
+        save_allps_response_to_snowflake(resp_code, resp_msg, method_name, xml_req, xml_resp)
+
     @classmethod
     def get_method_name(cls, xml_request: str):
         try:

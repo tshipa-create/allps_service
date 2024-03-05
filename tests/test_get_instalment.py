@@ -7,7 +7,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
 from model.get_instalment import GetInstalment, GetInstalmentResponseParser
-from test_open_asi import TEST_RESP_GUID, TEST_RESP_ORG, TEST_RESP_BRANCH
+from test_open_asi import TEST_RESP_GUID, TEST_RESP_ORG, TEST_RESP_BRANCH, normalize_xml
 from main import EXPECTED_INSTALMENT_STATUS
 
 TEST_PROMISSORY_ID = "TEST_00004C40F2"
@@ -93,24 +93,14 @@ class TestGetInstalment(unittest.TestCase):
         self.assertEqual(self.get_instalment.promissory_id, TEST_PROMISSORY_ID)
         self.assertEqual(self.get_instalment.inst_num, TEST_INST_NUM)
 
-    def test_to_xml(self):
-        expected_xml = f"""
-        <methods>
-            <GetInstalment>
-                <guid>{TEST_RESP_GUID}</guid>
-                <org_cd>{TEST_RESP_ORG}</org_cd>
-                <branch_cd>{TEST_RESP_BRANCH}</branch_cd>
-                <promissory_id>{TEST_PROMISSORY_ID}</promissory_id>
-                <inst_num>{TEST_INST_NUM}</inst_num>
-            </GetInstalment>
-        </methods>
-        """
-        self.assertEqual(self.get_instalment.to_xml().strip(), expected_xml.strip())
+    @patch("model.get_instalment.logObject")
+    def test_init_invalid_inst_num(self, mock_log):
+        GetInstalment(TEST_RESP_GUID, TEST_RESP_ORG, TEST_RESP_BRANCH, TEST_PROMISSORY_ID, 1000)
+        mock_log.error.assert_called_once()
 
-    def test_xml_response_to_dict(self):
-        xml_response = "<response><result>success</result></response>"
-        expected_dict = {"response": {"result": "success"}}
-        self.assertEqual(self.get_instalment.xml_response_to_dict(xml_response), expected_dict)
+    def test_to_xml(self):
+        expected_xml = normalize_xml(TEST_GET_INSTALL_REQUEST_XML)
+        self.assertEqual(normalize_xml(self.get_instalment.to_xml().strip()), expected_xml.strip())
 
     def test_xml_response_to_dict_successfull(self):
         xml_response = TEST_GET_INSTALL_RESPONSE_XML_SUCCESS
@@ -129,11 +119,11 @@ class TestGetInstalment(unittest.TestCase):
                 }
             }
         }
-        self.assertEqual(self.get_instalment.xml_response_to_dict(xml_response), expected_dict)
+        self.assertDictEqual(self.get_instalment.xml_response_to_dict(xml_response), expected_dict)
 
     def test_xml_response_to_dict_with_invalid_xml(self):
         invalid_xml_response = TEST_GET_INSTALL_RESPONSE_XML_INVALID
-        self.assertEqual(self.get_instalment.xml_response_to_dict(invalid_xml_response), {"responses": None})
+        self.assertDictEqual(self.get_instalment.xml_response_to_dict(invalid_xml_response), {"responses": None})
 
     def test_xml_response_to_dict_with_error_code(self):
         xml_response = TEST_GET_INSTALL_RESPONSE_XML_ERROR_CODE
@@ -151,9 +141,9 @@ class TestGetInstalment(unittest.TestCase):
                 }
             }
         }
-        self.assertEqual(self.get_instalment.xml_response_to_dict(xml_response), expected_dict)
-        
-        
+        self.assertDictEqual(self.get_instalment.xml_response_to_dict(xml_response), expected_dict)
+
+
 class TestGetInstalmentResponseParser(unittest.TestCase):
     def setUp(self):
         self.response_xml = TEST_GET_INSTALL_RESPONSE_XML_SUCCESS
