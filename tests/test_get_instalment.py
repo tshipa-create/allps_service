@@ -7,8 +7,10 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
 from model.get_instalment import GetInstalment, GetInstalmentResponseParser
-from test_open_asi import TEST_RESP_GUID, TEST_RESP_ORG, TEST_RESP_BRANCH, normalize_xml
+from test_open_asi import TEST_RESP_GUID, TEST_RESP_ORG, TEST_RESP_BRANCH
 from main import EXPECTED_INSTALMENT_STATUS
+from util import normalize_xml
+
 
 TEST_PROMISSORY_ID = "TEST_00004C40F2"
 TEST_INST_DT = "20240101"

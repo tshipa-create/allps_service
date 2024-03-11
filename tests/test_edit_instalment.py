@@ -8,8 +8,9 @@ sys.path.append(os.path.dirname(SCRIPT_DIR))
 
 from main import EXPECTED_INSTALMENT_STATUS
 from model.edit_instalment import EditInstalment, EditInstalmentResponseParser
-from test_open_asi import TEST_RESP_GUID, TEST_RESP_ORG, TEST_RESP_BRANCH, normalize_xml
+from test_open_asi import TEST_RESP_GUID, TEST_RESP_ORG, TEST_RESP_BRANCH
 from test_get_instalment import TEST_PROMISSORY_ID, TEST_INST_NUM
+from util import normalize_xml
 
 
 TEST_EDIT_INSTALL_ACTION_DT = "20240130"

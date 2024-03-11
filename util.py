@@ -61,3 +61,7 @@ def installments_statistics_from_processings(total_installments: int, edited_ins
             total_installments,
             edited_installments,
         )
+
+
+def normalize_xml(xml_str: str):
+    return "".join(xml_str.split())

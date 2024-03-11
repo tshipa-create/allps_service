@@ -7,7 +7,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
 from model.open_asi import OpenAsi, OpenAsiResponseParser
-
+from util import normalize_xml
 
 TEST_UID = "test_uid"
 TEST_PWD = "test_pwd"
@@ -157,10 +157,6 @@ class TestOpenAsiResponseParser(unittest.TestCase):
         self.response_parser.response_dict = None  # This will cause an exception in extract_values
         self.response_parser.extract_values()
         mock_log.error.assert_called_once()
-
-
-def normalize_xml(xml_str):
-    return "".join(xml_str.split())
 
 
 if __name__ == "__main__":

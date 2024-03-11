@@ -1,7 +1,7 @@
 from model import service_client, open_asi, edit_instalment, get_instalment
 import config
 from db import save_allps_response_to_snowflake
-import util
+from util import normalize_xml, get_reply_code_and_message, is_auth_guid
 import xmltodict
 from app_logging import logObject
 
@@ -33,10 +33,10 @@ class AllpsService:
                 product=config.ALLPS_PRODUCT,
                 version=config.ALLPS_PRODUCT_VERSION,
             )
-            xml_req = open_asi_auth.to_xml()
+            xml_req = normalize_xml(open_asi_auth.to_xml())
             method_name = cls.get_method_name(xml_req)
             xml_resp = client.request_data(xml_req, method_name)
-            resp_code, resp_msg = util.get_reply_code_and_message(xml_resp, method_name)
+            resp_code, resp_msg = get_reply_code_and_message(xml_resp, method_name)
             logObject.warning('ALLPS Authentication response_code: "%s", response_message: "%s"', resp_code, resp_msg)
             save_allps_response_to_snowflake(resp_code, resp_msg, method_name, xml_req, xml_resp)
             cls._auth_response_parser = open_asi.OpenAsiResponseParser(xml_resp)
@@ -48,8 +48,8 @@ class AllpsService:
         if cls._auth_response_parser is None:
             cls.authenticate()  # Ensures authentication before proceeding
         open_asi_auth_response_parser = cls._auth_response_parser
-        if util.is_auth_guid(open_asi_auth_response_parser.guid) is False:
-            exit(1)
+        if is_auth_guid(open_asi_auth_response_parser.guid) is False:
+            raise Exception("GUID is false, exiting")
         get_install = get_instalment.GetInstalment(
             guid=open_asi_auth_response_parser.guid,
             org_cd=open_asi_auth_response_parser.org,
@@ -57,10 +57,10 @@ class AllpsService:
             promissory_id=promissory_id,
             inst_num=inst_num,
         )
-        xml_req = get_install.to_xml()
+        xml_req = normalize_xml(get_install.to_xml())
         method_name = cls.get_method_name(xml_req)
         xml_resp = cls.get_client().request_data(xml_req, method_name)
-        resp_code, resp_msg = util.get_reply_code_and_message(xml_resp, method_name)
+        resp_code, resp_msg = get_reply_code_and_message(xml_resp, method_name)
         logObject.warning('ALLPS Get_Instalment response_code: "%s", response_message: "%s"', resp_code, resp_msg)
         save_allps_response_to_snowflake(resp_code, resp_msg, method_name, xml_req, xml_resp)
         response_parser = get_instalment.GetInstalmentResponseParser(xml_resp)
@@ -71,7 +71,7 @@ class AllpsService:
         if cls._auth_response_parser is None:
             cls.authenticate()
         open_asi_auth_response_parser = cls._auth_response_parser
-        if util.is_auth_guid(open_asi_auth_response_parser.guid) is False:
+        if is_auth_guid(open_asi_auth_response_parser.guid) is False:
             exit(1)
         edit_install = edit_instalment.EditInstalment(
             guid=open_asi_auth_response_parser.guid,
@@ -81,21 +81,22 @@ class AllpsService:
             inst_num=inst_num,
             new_action_dt=new_action_dt,
         )
-        xml_req = edit_install.to_xml()
+        xml_req = normalize_xml(edit_install.to_xml())
         method_name = cls.get_method_name(xml_req)
         xml_resp = cls.get_client().request_data(xml_req, method_name)
-        resp_code, resp_msg = util.get_reply_code_and_message(xml_resp, method_name)
+        resp_code, resp_msg = get_reply_code_and_message(xml_resp, method_name)
         logObject.warning("ALLPS Edit_Instalment response_code: %s, response_message: %s", resp_code, resp_msg)
         save_allps_response_to_snowflake(resp_code, resp_msg, method_name, xml_req, xml_resp)
         response_parser = edit_instalment.EditInstalmentResponseParser(xml_resp)
         return response_parser
 
-    def close_asi(self):
-        close_asi = open_asi.CloseAsi(guid=self._auth_response_parser.guid)
-        xml_req = close_asi.to_xml()
-        method_name = self.get_method_name(xml_req)
-        xml_resp = self.get_client().request_data(xml_req, method_name)
-        resp_code, resp_msg = util.get_reply_code_and_message(xml_resp, method_name)
+    @classmethod
+    def close_asi(cls):
+        close_asi = open_asi.CloseAsi(guid=cls._auth_response_parser.guid)
+        xml_req = normalize_xml(close_asi.to_xml())
+        method_name = cls.get_method_name(xml_req)
+        xml_resp = cls.get_client().request_data(xml_req, method_name)
+        resp_code, resp_msg = get_reply_code_and_message(xml_resp, method_name)
         logObject.warning("ALLPS Close_asi response_code: %s, response_message: %s", resp_code, resp_msg)
         save_allps_response_to_snowflake(resp_code, resp_msg, method_name, xml_req, xml_resp)
 
