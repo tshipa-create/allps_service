@@ -32,6 +32,10 @@ from test_edit_instalment import (
 
 
 class TestXMLValidity(unittest.TestCase):
+    """
+    This test no the code but actual XML strings that are being used in Unit Tests.
+    """
+
     def validate_xml_structure(self, xml_string):
         try:
             ET.fromstring(xml_string)

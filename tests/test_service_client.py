@@ -17,6 +17,7 @@ from test_get_instalment import (
     TEST_GET_INSTALL_RESPONSE_XML_SUCCESS,
 )
 from test_edit_instalment import TEST_EDIT_INSTALL_REQUEST_XML, TEST_EDIT_INSTALL_RESPONSE_XML_SUCCESS
+from util import normalize_xml
 
 
 class TestServiceClient(unittest.TestCase):
@@ -26,7 +27,7 @@ class TestServiceClient(unittest.TestCase):
 
     def test_request_open_asi_data_success(self):
         method_name = "OpenAsi"
-        xml_request = TEST_OPEN_ASI_REQUEST_XML
+        xml_request = normalize_xml(TEST_OPEN_ASI_REQUEST_XML)
         xml_response = TEST_OPEN_ASI_RESPONSE_XML_SUCCESS
         self.client.client.service.Call = Mock(return_value=xml_response)
         result = self.client.request_data(xml_request, method_name)
@@ -37,13 +38,13 @@ class TestServiceClient(unittest.TestCase):
         # Mock the client.service.Call method to raise an exception
         self.client.client.service.Call = Mock(side_effect=Exception("Some error"))
         method_name = "OpenAsi"
-        xml_request = TEST_OPEN_ASI_REQUEST_XML
+        xml_request = normalize_xml(TEST_OPEN_ASI_REQUEST_XML)
         result = self.client.request_data(xml_request, method_name)
         self.assertIsNone(result)
         self.client.client.service.Call.assert_called_once_with(xmlrequest=xml_request)
 
     def test_request_data_GetInstalment(self):
-        xml_request = TEST_GET_INSTALL_REQUEST_XML
+        xml_request = normalize_xml(TEST_GET_INSTALL_REQUEST_XML)
         method_name = "GetInstalment"
         xml_response = TEST_GET_INSTALL_RESPONSE_XML_SUCCESS
         self.client.client.service.Call = Mock(return_value=xml_response)
@@ -54,7 +55,7 @@ class TestServiceClient(unittest.TestCase):
 
     # TODO: change to editInstalment when the method is implemented
     def test_request_data_EditInstalment(self):
-        xml_request = TEST_EDIT_INSTALL_REQUEST_XML
+        xml_request = normalize_xml(TEST_EDIT_INSTALL_REQUEST_XML)
         method_name = "EditInstalment"
         xml_response = TEST_EDIT_INSTALL_RESPONSE_XML_SUCCESS
         self.client.client.service.Call = Mock(return_value=xml_response)
