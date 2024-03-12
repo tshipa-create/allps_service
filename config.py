@@ -14,7 +14,7 @@ SF_DATABASE = environ["SF_DATABASE_NAME"]
 SF_SCHEMA = environ["SF_SCHEMA_NAME"]
 SF_ALLPS_XML_LOG_TABLE = environ["SF_ALLPS_XML_LOG_TABLE"]
 
-SLACK_TIMEOUT = int(environ["SLACK_TIMEOUT"])
+SLACK_TIMEOUT = int(environ["SLACK_TIMEOUT"])  # TODO: Remove?
 ENABLE_SLACK_NOTIFICATIONS = bool(environ.get("ENABLE_SLACK_NOTIFICATIONS", False).lower() == "true")
 
 ALLPS_HOST = environ["ALLPS_HOST"]

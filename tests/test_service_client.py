@@ -43,7 +43,7 @@ class TestServiceClient(unittest.TestCase):
         self.assertIsNone(result)
         self.client.client.service.Call.assert_called_once_with(xmlrequest=xml_request)
 
-    def test_request_data_GetInstalment(self):
+    def test_request_data_get_instalment(self):
         xml_request = normalize_xml(TEST_GET_INSTALL_REQUEST_XML)
         method_name = "GetInstalment"
         xml_response = TEST_GET_INSTALL_RESPONSE_XML_SUCCESS
@@ -53,8 +53,7 @@ class TestServiceClient(unittest.TestCase):
         self.assertEqual(result, xml_response)
         self.client.client.service.Call.assert_called_once_with(xmlrequest=xml_request)
 
-    # TODO: change to editInstalment when the method is implemented
-    def test_request_data_EditInstalment(self):
+    def test_request_data_edit_instalment(self):
         xml_request = normalize_xml(TEST_EDIT_INSTALL_REQUEST_XML)
         method_name = "EditInstalment"
         xml_response = TEST_EDIT_INSTALL_RESPONSE_XML_SUCCESS
