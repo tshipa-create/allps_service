@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 import sys
 import unittest
@@ -10,10 +11,11 @@ from main import EXPECTED_INSTALMENT_STATUS
 from model.edit_instalment import EditInstalment, EditInstalmentResponseParser
 from test_open_asi import TEST_RESP_GUID, TEST_RESP_ORG, TEST_RESP_BRANCH
 from test_get_instalment import TEST_PROMISSORY_ID, TEST_INST_NUM
-from util import normalize_xml
+from util import normalize_xml, format_date_to_string
 
 
-TEST_EDIT_INSTALL_ACTION_DT = "20240130"
+TEST_EDIT_INSTALL_ACTION_DT = datetime(2024, 1, 30)
+TEST_EDIT_INSTALL_ACTION_DT_STR = format_date_to_string(datetime(2024, 1, 30))
 TEST_EDIT_INSTALL_IVALID_DATE_FORMAT = "2024-01-30"
 TEST_EDIT_INSTALL_RESP_REPLY_CD_SUCCESS = "207"
 TEST_EDIT_INSTALL_RESP_REPLY_STR_SUCCESS = "Transaction Successful (207)"
@@ -29,7 +31,7 @@ TEST_EDIT_INSTALL_REQUEST_XML = f"""
                 <branch_cd>{TEST_RESP_BRANCH}</branch_cd>
                 <promissory_id>{TEST_PROMISSORY_ID}</promissory_id>
                 <inst_num>{TEST_INST_NUM}</inst_num>
-                <new_action_dt>{TEST_EDIT_INSTALL_ACTION_DT}</new_action_dt>
+                <new_action_dt>{TEST_EDIT_INSTALL_ACTION_DT_STR}</new_action_dt>
                 <new_track_cd>{TEST_EDIT_INSTALL_RESP_NEW_TRACK_CODE}</new_track_cd>
             </EditInstalment>
         </methods>
@@ -43,7 +45,7 @@ TEST_EDIT_INSTALL_RESPONSE_XML_SUCCESS = f"""
                 <branch_cd>{TEST_RESP_BRANCH}</branch_cd>
                 <promissory_id>{TEST_PROMISSORY_ID}</promissory_id>
                 <inst_num>{TEST_INST_NUM}</inst_num>
-                <new_action_dt>{TEST_EDIT_INSTALL_ACTION_DT}</new_action_dt>
+                <new_action_dt>{TEST_EDIT_INSTALL_ACTION_DT_STR}</new_action_dt>
                 <new_track_cd>{TEST_EDIT_INSTALL_RESP_NEW_TRACK_CODE}</new_track_cd>
                 <status>{EXPECTED_INSTALMENT_STATUS}</status>
                 <reply_cd>{TEST_EDIT_INSTALL_RESP_REPLY_CD_SUCCESS}</reply_cd>
@@ -62,7 +64,7 @@ TEST_EDIT_INSTALL_RESPONSE_XML_ERROR_CODE = f"""
                 <branch_cd>{TEST_RESP_BRANCH}</branch_cd>
                 <promissory_id>{TEST_PROMISSORY_ID}</promissory_id>
                 <inst_num>{TEST_INST_NUM}</inst_num>
-                <new_action_dt>{TEST_EDIT_INSTALL_ACTION_DT}</new_action_dt>
+                <new_action_dt>{TEST_EDIT_INSTALL_ACTION_DT_STR}</new_action_dt>
                 <new_track_cd>{TEST_EDIT_INSTALL_RESP_NEW_TRACK_CODE}</new_track_cd>
                 <reply_cd>{TEST_EDIT_INSTALL_RESP_REPLY_CD_NOT_SUCCESS}</reply_cd>
                 <reply_str>{TEST_EDIT_INSTALL_RESP_REPLY_STR_NOT_SUCCESS}</reply_str>
@@ -98,6 +100,7 @@ class TestEditInstalment(unittest.TestCase):
         self.edit_instalment = EditInstalment(
             self.guid, self.org_cd, self.branch_cd, self.promissory_id, self.inst_num, self.new_action_dt
         )
+        self.new_action_dt_str = format_date_to_string(self.new_action_dt)
 
     def test_init(self):
         self.assertEqual(self.edit_instalment.guid, self.guid)
@@ -105,23 +108,11 @@ class TestEditInstalment(unittest.TestCase):
         self.assertEqual(self.edit_instalment.branch_cd, self.branch_cd)
         self.assertEqual(self.edit_instalment.promissory_id, self.promissory_id)
         self.assertEqual(self.edit_instalment.inst_num, self.inst_num)
-        self.assertEqual(self.edit_instalment.new_action_dt, self.new_action_dt)
+        self.assertEqual(self.edit_instalment.new_action_dt, self.new_action_dt_str)
 
     @patch("model.edit_instalment.logObject")
     def test_init_invalid_inst_num(self, mock_log):
         EditInstalment(self.guid, self.org_cd, self.branch_cd, self.promissory_id, 1000, self.new_action_dt)
-        mock_log.error.assert_called_once()
-
-    @patch("model.edit_instalment.logObject")
-    def test_init_invalid_date(self, mock_log):
-        EditInstalment(
-            self.guid,
-            self.org_cd,
-            self.branch_cd,
-            self.promissory_id,
-            self.inst_num,
-            TEST_EDIT_INSTALL_IVALID_DATE_FORMAT,
-        )
         mock_log.error.assert_called_once()
 
     def test_to_xml(self):
@@ -138,7 +129,7 @@ class TestEditInstalment(unittest.TestCase):
                     "branch_cd": self.branch_cd,
                     "promissory_id": self.promissory_id,
                     "inst_num": str(self.inst_num),
-                    "new_action_dt": self.new_action_dt,
+                    "new_action_dt": self.new_action_dt_str,
                     "new_track_cd": TEST_EDIT_INSTALL_RESP_NEW_TRACK_CODE,
                     "status": EXPECTED_INSTALMENT_STATUS,
                     "reply_cd": TEST_EDIT_INSTALL_RESP_REPLY_CD_SUCCESS,
@@ -162,7 +153,7 @@ class TestEditInstalment(unittest.TestCase):
                     "branch_cd": self.branch_cd,
                     "promissory_id": self.promissory_id,
                     "inst_num": str(self.inst_num),
-                    "new_action_dt": self.new_action_dt,
+                    "new_action_dt": self.new_action_dt_str,
                     "new_track_cd": TEST_EDIT_INSTALL_RESP_NEW_TRACK_CODE,
                     "reply_cd": TEST_EDIT_INSTALL_RESP_REPLY_CD_NOT_SUCCESS,
                     "reply_str": TEST_EDIT_INSTALL_RESP_REPLY_STR_NOT_SUCCESS,
@@ -179,7 +170,7 @@ class TestEditInstalmentResponseParser(unittest.TestCase):
 
     def test_extract_values(self):
         self.assertEqual(self.response_parser.inst_num, str(TEST_INST_NUM))
-        self.assertEqual(self.response_parser.new_action_dt, TEST_EDIT_INSTALL_ACTION_DT)
+        self.assertEqual(self.response_parser.new_action_dt, TEST_EDIT_INSTALL_ACTION_DT_STR)
         self.assertEqual(self.response_parser.reply_cd, TEST_EDIT_INSTALL_RESP_REPLY_CD_SUCCESS)
         self.assertEqual(self.response_parser.reply_str, TEST_EDIT_INSTALL_RESP_REPLY_STR_SUCCESS)
 

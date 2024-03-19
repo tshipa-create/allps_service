@@ -6,17 +6,17 @@ import config
 
 
 class EditInstalment:
-    def __init__(self, guid: str, org_cd: str, branch_cd: str, promissory_id: str, inst_num: int, new_action_dt: datetime.date):
+    def __init__(
+        self, guid: str, org_cd: str, branch_cd: str, promissory_id: str, inst_num: int, new_action_dt: datetime.date
+    ):
         if not 1 <= inst_num <= 999:
             logObject.error("inst_num (installment number) must be between 1 and 999")
-        if util.is_valid_date(new_action_dt) is False:
-            logObject.error("new_action_dt (new action date) must be in the format YYYYMMDD")
         self.guid = guid
         self.org_cd = org_cd
         self.branch_cd = branch_cd
         self.promissory_id = promissory_id
         self.inst_num = inst_num
-        self.new_action_dt = new_action_dt
+        self.new_action_dt = util.format_date_to_string(new_action_dt)  # format date to string for xml 'YYYYMMDD'
 
     def to_xml(self):
         return f"""

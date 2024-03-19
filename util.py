@@ -10,12 +10,8 @@ def get_reply_code_and_message(xml_response: str, method_name: str):
     return reply_code, reply_message
 
 
-def is_valid_date(new_action_dt: datetime) -> bool:
-    try:
-        new_action_dt.strftime("%Y%m%d")
-        return True
-    except ValueError:
-        return False
+def format_date_to_string(date: datetime):
+    return date.strftime("%Y%m%d")
 
 
 def is_auth_guid(guid: str) -> bool:

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import config
 import snowflake_db_connection_service as snowflake_db
 import pandas as pd
@@ -22,7 +22,6 @@ def process_df(df: pd.DataFrame):
 def fetch_retry_loans_data():
     sql_query = """
                 SELECT * FROM PLANET42_LIVE_DB.DATA_TEAM.VIEW_ALLPS_RETRY_INSTALMENTS
-                WHERE PROMISSORY_ID = '00052382B7'
                 ORDER BY INST_NUM  DESC
                 """
     try:
@@ -55,7 +54,7 @@ def save_allps_response_to_snowflake(
         )
         """
         data = (
-            datetime.utcnow(),
+            datetime.now(timezone.utc),
             config.ALLPS_HOST,
             method_name,
             resp_code,

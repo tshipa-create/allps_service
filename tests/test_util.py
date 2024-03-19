@@ -1,3 +1,4 @@
+from datetime import datetime
 import sys
 import os
 import unittest
@@ -17,7 +18,6 @@ from tests.test_open_asi import (
 
 from util import (
     get_reply_code_and_message,
-    is_valid_date,
     is_auth_guid,
     check_instalment_status,
     check_instalment_not_in_future,
@@ -37,12 +37,6 @@ class TestUtilityFunctions(unittest.TestCase):
         code, message = get_reply_code_and_message(xml_response, MEHTOD_NAME)
         self.assertEqual(code, TEST_RESP_REPLY_CD_SUCCESS)
         self.assertEqual(message, TEST_RESP_REPLY_STR_SUCCESS)
-
-    def test_is_valid_date_true(self):
-        self.assertTrue(is_valid_date("20240101"))
-
-    def test_is_valid_date_false(self):
-        self.assertFalse(is_valid_date("20240132"))
 
     @patch("util.logObject")
     def test_is_auth_guid_true(self, mock_log):
