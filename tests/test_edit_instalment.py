@@ -19,6 +19,7 @@ TEST_EDIT_INSTALL_RESP_REPLY_CD_SUCCESS = "207"
 TEST_EDIT_INSTALL_RESP_REPLY_STR_SUCCESS = "Transaction Successful (207)"
 TEST_EDIT_INSTALL_RESP_REPLY_CD_NOT_SUCCESS = "341"
 TEST_EDIT_INSTALL_RESP_REPLY_STR_NOT_SUCCESS = "More than 2 arrears collections in same cycle not allowed (341)"
+TEST_EDIT_INSTALL_RESP_NEW_TRACK_CODE = "07"
 
 TEST_EDIT_INSTALL_REQUEST_XML = f"""
         <methods>
@@ -29,6 +30,7 @@ TEST_EDIT_INSTALL_REQUEST_XML = f"""
                 <promissory_id>{TEST_PROMISSORY_ID}</promissory_id>
                 <inst_num>{TEST_INST_NUM}</inst_num>
                 <new_action_dt>{TEST_EDIT_INSTALL_ACTION_DT}</new_action_dt>
+                <new_track_cd>{TEST_EDIT_INSTALL_RESP_NEW_TRACK_CODE}</new_track_cd>
             </EditInstalment>
         </methods>
         """
@@ -42,6 +44,7 @@ TEST_EDIT_INSTALL_RESPONSE_XML_SUCCESS = f"""
                 <promissory_id>{TEST_PROMISSORY_ID}</promissory_id>
                 <inst_num>{TEST_INST_NUM}</inst_num>
                 <new_action_dt>{TEST_EDIT_INSTALL_ACTION_DT}</new_action_dt>
+                <new_track_cd>{TEST_EDIT_INSTALL_RESP_NEW_TRACK_CODE}</new_track_cd>
                 <status>{EXPECTED_INSTALMENT_STATUS}</status>
                 <reply_cd>{TEST_EDIT_INSTALL_RESP_REPLY_CD_SUCCESS}</reply_cd>
                 <reply_str>{TEST_EDIT_INSTALL_RESP_REPLY_STR_SUCCESS}</reply_str>
@@ -59,9 +62,10 @@ TEST_EDIT_INSTALL_RESPONSE_XML_ERROR_CODE = f"""
                 <branch_cd>{TEST_RESP_BRANCH}</branch_cd>
                 <promissory_id>{TEST_PROMISSORY_ID}</promissory_id>
                 <inst_num>{TEST_INST_NUM}</inst_num>
-                <new_action_dt></new_action_dt>
-                <reply_cd>{TEST_EDIT_INSTALL_RESP_REPLY_CD_SUCCESS}</reply_cd>
-                <reply_str>{TEST_EDIT_INSTALL_RESP_REPLY_STR_SUCCESS}</reply_str>
+                <new_action_dt>{TEST_EDIT_INSTALL_ACTION_DT}</new_action_dt>
+                <new_track_cd>{TEST_EDIT_INSTALL_RESP_NEW_TRACK_CODE}</new_track_cd>
+                <reply_cd>{TEST_EDIT_INSTALL_RESP_REPLY_CD_NOT_SUCCESS}</reply_cd>
+                <reply_str>{TEST_EDIT_INSTALL_RESP_REPLY_STR_NOT_SUCCESS}</reply_str>
             </EditInstalment>
         </responses>
         """
@@ -75,8 +79,9 @@ TEST_EDIT_INSTALL_RESPONSE_XML_MISSING_VALUES = f"""
                 <promissory_id>{TEST_PROMISSORY_ID}</promissory_id>
                 <inst_num>{TEST_INST_NUM}</inst_num>
                 <new_action_dt></new_action_dt>
-                <reply_cd>{TEST_EDIT_INSTALL_RESP_REPLY_CD_NOT_SUCCESS}</reply_cd>
-                <reply_str>{TEST_EDIT_INSTALL_RESP_REPLY_STR_NOT_SUCCESS}</reply_str>
+                <new_track_cd>{TEST_EDIT_INSTALL_RESP_NEW_TRACK_CODE}</new_track_cd>
+                <reply_cd>{TEST_EDIT_INSTALL_RESP_REPLY_CD_SUCCESS}</reply_cd>
+                <reply_str>{TEST_EDIT_INSTALL_RESP_REPLY_STR_SUCCESS}</reply_str>
             </EditInstalment>
         </responses>
         """
@@ -134,6 +139,7 @@ class TestEditInstalment(unittest.TestCase):
                     "promissory_id": self.promissory_id,
                     "inst_num": str(self.inst_num),
                     "new_action_dt": self.new_action_dt,
+                    "new_track_cd": TEST_EDIT_INSTALL_RESP_NEW_TRACK_CODE,
                     "status": EXPECTED_INSTALMENT_STATUS,
                     "reply_cd": TEST_EDIT_INSTALL_RESP_REPLY_CD_SUCCESS,
                     "reply_str": TEST_EDIT_INSTALL_RESP_REPLY_STR_SUCCESS,
@@ -156,9 +162,10 @@ class TestEditInstalment(unittest.TestCase):
                     "branch_cd": self.branch_cd,
                     "promissory_id": self.promissory_id,
                     "inst_num": str(self.inst_num),
-                    "new_action_dt": None,
-                    "reply_cd": TEST_EDIT_INSTALL_RESP_REPLY_CD_SUCCESS,
-                    "reply_str": TEST_EDIT_INSTALL_RESP_REPLY_STR_SUCCESS,
+                    "new_action_dt": self.new_action_dt,
+                    "new_track_cd": TEST_EDIT_INSTALL_RESP_NEW_TRACK_CODE,
+                    "reply_cd": TEST_EDIT_INSTALL_RESP_REPLY_CD_NOT_SUCCESS,
+                    "reply_str": TEST_EDIT_INSTALL_RESP_REPLY_STR_NOT_SUCCESS,
                 }
             }
         }
@@ -180,8 +187,8 @@ class TestEditInstalmentResponseParser(unittest.TestCase):
         response_parser = EditInstalmentResponseParser(TEST_EDIT_INSTALL_RESPONSE_XML_MISSING_VALUES)
         self.assertEqual(response_parser.inst_num, str(TEST_INST_NUM))
         self.assertEqual(response_parser.new_action_dt, None)
-        self.assertEqual(response_parser.reply_cd, TEST_EDIT_INSTALL_RESP_REPLY_CD_NOT_SUCCESS)
-        self.assertEqual(response_parser.reply_str, TEST_EDIT_INSTALL_RESP_REPLY_STR_NOT_SUCCESS)
+        self.assertEqual(response_parser.reply_cd, TEST_EDIT_INSTALL_RESP_REPLY_CD_SUCCESS)
+        self.assertEqual(response_parser.reply_str, TEST_EDIT_INSTALL_RESP_REPLY_STR_SUCCESS)
 
     @patch("model.edit_instalment.logObject")
     def test_extract_values_with_exception(self, mock_log):

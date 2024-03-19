@@ -19,13 +19,16 @@ def process_df(df: pd.DataFrame):
     return df
 
 
-def fetch_retry_loans_data():  # TODO: Change SQL to right one
+def fetch_retry_loans_data():
     sql_query = """
-    SELECT 1 FROM DUAL 
-    """
+                SELECT * FROM PLANET42_LIVE_DB.DATA_TEAM.VIEW_ALLPS_RETRY_INSTALMENTS
+                ORDER BY INST_NUM  DESC
+                LIMIT 2
+                """
     try:
         with setup_snowflake_connection() as sf_connection:
             df = sf_connection.read_into_dataframe(sql_query)
+            logObject.warning("Found %d retry loans data", len(df))
             return process_df(df)
     except Exception as e:
         logObject.error("Error fetching retry loans data: %s", e)

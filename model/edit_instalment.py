@@ -1,6 +1,7 @@
 import util
 import xmltodict
 from app_logging import logObject
+import config
 
 
 class EditInstalment:
@@ -26,6 +27,7 @@ class EditInstalment:
                 <promissory_id>{self.promissory_id}</promissory_id>
                 <inst_num>{self.inst_num}</inst_num>
                 <new_action_dt>{self.new_action_dt}</new_action_dt>
+                <new_track_cd>{config.ALLPS_NEW_TRACK_CODE}</new_track_cd>
             </EditInstalment>
         </methods>
         """

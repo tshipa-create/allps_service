@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import xmltodict
 from app_logging import logObject
 
@@ -36,7 +36,7 @@ def check_instalment_status(current_status: str, check_status: str) -> bool:
 
 
 def check_instalment_not_in_future(installment_date: str) -> bool:
-    current_utc_date = datetime.utcnow().date()
+    current_utc_date = datetime.now(timezone.utc).date()
     installment_as_date = datetime.strptime(installment_date, "%Y%m%d").date()
     if installment_as_date > current_utc_date:
         logObject.warning("Instalment date is in future: %s with current date: %s", installment_date, current_utc_date)
@@ -65,3 +65,13 @@ def installments_statistics_from_processings(total_installments: int, edited_ins
 
 def normalize_xml(xml_str: str):
     return "".join(xml_str.split())
+
+
+def check_loans_data_fetch(df):
+    if df is None:
+        logObject.error("Error fetching retry loans data. Exiting process...")
+        return False
+    elif df.empty:
+        logObject.warning("No retry loans data found. Exiting process...")
+        return False
+    return True

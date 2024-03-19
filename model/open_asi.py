@@ -1,5 +1,6 @@
 import xmltodict
 from app_logging import logObject
+import config
 
 
 class OpenAsi:
@@ -38,11 +39,15 @@ class OpenAsiResponseParser:
         self.extract_values()
 
     def extract_values(self):
+        """
+        As for some reason in production our ALLPS user does not return BRANCH and ORG as it did in TEST env,
+        we will add workaround to get the branch and org from the config file when get returns None.
+        """
         try:
             open_asi_info = self.response_dict.get("responses", {}).get("OpenAsi", {})
-            self.branch = open_asi_info.get("branch", None)
+            self.branch = open_asi_info.get("branch", config.ALLPS_BRANCH_CODE)
             self.guid = open_asi_info.get("guid", None)
-            self.org = open_asi_info.get("org", None)
+            self.org = open_asi_info.get("org", config.ALLPS_ORG_CODE)
             self.reply_cd = open_asi_info.get("reply_cd", None)
             self.reply_str = open_asi_info.get("reply_str", None)
         except Exception as e:
