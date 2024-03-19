@@ -10,9 +10,9 @@ def get_reply_code_and_message(xml_response: str, method_name: str):
     return reply_code, reply_message
 
 
-def is_valid_date(new_action_dt: str) -> bool:
+def is_valid_date(new_action_dt: datetime) -> bool:
     try:
-        datetime.strptime(new_action_dt, "%Y%m%d")
+        new_action_dt.strftime("%Y%m%d")
         return True
     except ValueError:
         return False

@@ -1,3 +1,4 @@
+from datetime import datetime
 import util
 import xmltodict
 from app_logging import logObject
@@ -5,7 +6,7 @@ import config
 
 
 class EditInstalment:
-    def __init__(self, guid: str, org_cd: str, branch_cd: str, promissory_id: str, inst_num: int, new_action_dt: str):
+    def __init__(self, guid: str, org_cd: str, branch_cd: str, promissory_id: str, inst_num: int, new_action_dt: datetime.date):
         if not 1 <= inst_num <= 999:
             logObject.error("inst_num (installment number) must be between 1 and 999")
         if util.is_valid_date(new_action_dt) is False:

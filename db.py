@@ -22,8 +22,8 @@ def process_df(df: pd.DataFrame):
 def fetch_retry_loans_data():
     sql_query = """
                 SELECT * FROM PLANET42_LIVE_DB.DATA_TEAM.VIEW_ALLPS_RETRY_INSTALMENTS
+                WHERE PROMISSORY_ID = '00052382B7'
                 ORDER BY INST_NUM  DESC
-                LIMIT 2
                 """
     try:
         with setup_snowflake_connection() as sf_connection:
