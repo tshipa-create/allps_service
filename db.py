@@ -1,17 +1,22 @@
 from datetime import datetime, timezone
 import config
-import snowflake_db_connection_service as snowflake_db
 import pandas as pd
 from app_logging import logObject
+from sqlalchemy import create_engine
+from snowflake.sqlalchemy import URL
+from sqlalchemy.pool import QueuePool
 
 
-def setup_snowflake_connection():
-    return snowflake_db.SnowflakeConnectionManager(
-        account=config.SF_ACCOUNT,
-        user=config.SF_USER,
-        password=config.SF_PASSWORD,
-        database=config.SF_DATABASE,
+def get_snowflake_engine():
+    engine = create_engine(
+        URL(account=config.SF_ACCOUNT, user=config.SF_USER, password=config.SF_PASSWORD, database=config.SF_DATABASE),
+        poolclass=QueuePool,
+        pool_size=5,
+        max_overflow=10,
+        pool_timeout=30,
+        pool_recycle=3600,
     )
+    return engine
 
 
 def process_df(df: pd.DataFrame):
@@ -25,8 +30,9 @@ def fetch_retry_loans_data():
                 ORDER BY INST_NUM  DESC
                 """
     try:
-        with setup_snowflake_connection() as sf_connection:
-            df = sf_connection.read_into_dataframe(sql_query)
+        engine = get_snowflake_engine()
+        with engine.connect() as sf_connection:
+            df = pd.read_sql(sql_query, sf_connection)
             logObject.warning("Found %d retry loans data", len(df))
             return process_df(df)
     except Exception as e:
@@ -62,7 +68,11 @@ def save_allps_response_to_snowflake(
             request_xml,
             response_xml,
         )
-        with setup_snowflake_connection() as sf_connection:
-            sf_connection.insert_into_table(insert_sql, data, config.SF_ALLPS_XML_LOG_TABLE)
+        engine = get_snowflake_engine()
+        with engine.connect() as sf_connection:
+            result = sf_connection.execute(insert_sql, data)
+            logObject.warning(
+                "Row %d inserted into Snowflake table: %s", result.rowcount, config.SF_ALLPS_XML_LOG_TABLE
+            )
     except Exception as e:
         logObject.error("Error saving ALLPS response to Snowflake: %s", e)
