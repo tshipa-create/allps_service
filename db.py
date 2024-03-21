@@ -76,3 +76,34 @@ def save_allps_response_to_snowflake(
             )
     except Exception as e:
         logObject.error("Error saving ALLPS response to Snowflake: %s", e)
+
+
+def fetch_daily_monitoring_data():
+    logObject.warning("Fetching daily monitoring data from Snowflake...")
+    sql_query = """
+                SELECT
+                    CURRENT_DATE() AS MONITORING_DATE,
+                    COUNT(ID) AS COUNT_OF_ROWS,
+                    HOST,
+                    METHOD_NAME ,
+                    RESPONSE_CODE ,
+                    RESPONSE_MESSAGE
+                FROM
+                    PLANET42_LIVE_DB.DATA_TEAM.ALLPS_SERVICE_API_LOGS
+                WHERE
+                    REQUEST_DATE_UTC::DATE = CURRENT_DATE()
+                GROUP BY
+                    HOST,
+                    METHOD_NAME ,
+                    RESPONSE_CODE ,
+                    RESPONSE_MESSAGE
+                """
+    try:
+        engine = get_snowflake_engine()
+        with engine.connect() as sf_connection:
+            df = pd.read_sql(sql_query, sf_connection)
+            logObject.warning("Found %d rows of daily monitoring data", len(df))
+            return process_df(df)
+    except Exception as e:
+        logObject.error("Error fetching daily monitoring data: %s", e)
+        return None

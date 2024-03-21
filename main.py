@@ -1,8 +1,9 @@
 from model.allps_service import AllpsService
 import util
 from app_logging import logObject
-from db import fetch_retry_loans_data
-
+from db import fetch_retry_loans_data, fetch_daily_monitoring_data
+import config
+from slack_integration import slack_post_msg
 
 EXPECTED_INSTALMENT_STATUS = "INCOMPLETE"
 
@@ -43,6 +44,9 @@ def main():
         count_edit_instalments += 1
     util.installments_statistics_from_processings(len(df), count_edit_instalments)
     allps_service_instance.close_asi()
+    if config.ENABLE_SLACK_NOTIFICATIONS:
+        df_monitoring = fetch_daily_monitoring_data()
+        slack_post_msg(df_monitoring)
 
 
 if __name__ == "__main__":
