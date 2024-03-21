@@ -7,7 +7,6 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
 from model.service_client import RequestClient
-from model.allps_service import ALLPS_WSDL_URL
 from test_open_asi import (
     TEST_OPEN_ASI_REQUEST_XML,
     TEST_OPEN_ASI_RESPONSE_XML_SUCCESS,
@@ -19,6 +18,8 @@ from test_get_instalment import (
 from test_edit_instalment import TEST_EDIT_INSTALL_REQUEST_XML, TEST_EDIT_INSTALL_RESPONSE_XML_SUCCESS
 from util import normalize_xml
 
+
+ALLPS_WSDL_URL = "https://web2.intecon.co.za/allpsws_test/allps.asmx?wsdl"
 
 class TestServiceClient(unittest.TestCase):
     def setUp(self):

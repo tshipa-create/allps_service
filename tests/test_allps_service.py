@@ -27,6 +27,7 @@ from util import normalize_xml
 from test_edit_instalment import (
     TEST_EDIT_INSTALL_ACTION_DT,
     TEST_EDIT_INSTALL_REQUEST_XML,
+    TEST_EDIT_INSTALL_RESP_NEW_TRACK_CODE,
     TEST_EDIT_INSTALL_RESP_REPLY_CD_SUCCESS,
     TEST_EDIT_INSTALL_RESP_REPLY_STR_SUCCESS,
     TEST_EDIT_INSTALL_RESPONSE_XML_SUCCESS,
@@ -88,6 +89,7 @@ class TestAllpsService(unittest.TestCase):
     @patch("model.allps_service.save_allps_response_to_snowflake")
     @patch("model.allps_service.is_auth_guid")
     @patch("model.allps_service.get_reply_code_and_message")
+    @patch("model.edit_instalment.config.ALLPS_NEW_TRACK_CODE", TEST_EDIT_INSTALL_RESP_NEW_TRACK_CODE)
     def test_edit_instalment(
         self, mock_get_reply_code_and_message, mock_is_auth_guid, mock_save_allps_response_to_snowflake
     ):

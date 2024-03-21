@@ -115,6 +115,7 @@ class TestEditInstalment(unittest.TestCase):
         EditInstalment(self.guid, self.org_cd, self.branch_cd, self.promissory_id, 1000, self.new_action_dt)
         mock_log.error.assert_called_once()
 
+    @patch("model.edit_instalment.config.ALLPS_NEW_TRACK_CODE", TEST_EDIT_INSTALL_RESP_NEW_TRACK_CODE)
     def test_to_xml(self):
         expected_xml = normalize_xml(TEST_EDIT_INSTALL_REQUEST_XML)
         self.assertEqual(normalize_xml(self.edit_instalment.to_xml().strip()), expected_xml.strip())
