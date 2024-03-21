@@ -1,4 +1,3 @@
-from datetime import datetime
 import sys
 import os
 import unittest
@@ -8,7 +7,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
 
-from main import EXPECTED_INSTALMENT_STATUS
+from test_get_instalment import EXPECTED_INSTALMENT_STATUS
 from tests.test_open_asi import (
     TEST_OPEN_ASI_RESPONSE_XML_SUCCESS,
     TEST_RESP_REPLY_CD_SUCCESS,

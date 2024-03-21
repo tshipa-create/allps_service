@@ -3,11 +3,12 @@ import os
 import unittest
 from unittest.mock import patch
 
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
-from model.open_asi import OpenAsi, OpenAsiResponseParser
 from util import normalize_xml
+from tests.test_base_setup import BaseTest
 
 TEST_UID = "test_uid"
 TEST_PWD = "test_pwd"
@@ -76,9 +77,16 @@ TEST_OPEN_ASI_RESPONSE_XML_MISSING_VALUES = f"""
                                 """
 
 
-class TestOpenAsi(unittest.TestCase):
+class TestOpenAsi(BaseTest):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        from model.open_asi import OpenAsi
+
+        cls.OpenAsi = OpenAsi
+
     def setUp(self):
-        self.open_asi = OpenAsi(
+        self.open_asi = self.OpenAsi(
             TEST_UID, TEST_PWD, TEST_MACHINE, TEST_USER_IF, TEST_INTEGRATOR, TEST_PRODUCT, TEST_VERSION
         )
 
@@ -130,10 +138,17 @@ class TestOpenAsi(unittest.TestCase):
         self.assertDictEqual(self.open_asi.xml_response_to_dict(xml_response), expected_dict)
 
 
-class TestOpenAsiResponseParser(unittest.TestCase):
+class TestOpenAsiResponseParser(BaseTest):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        from model.open_asi import OpenAsiResponseParser
+
+        cls.OpenAsiResponseParser = OpenAsiResponseParser
+
     def setUp(self):
         self.response_xml = TEST_OPEN_ASI_RESPONSE_XML_SUCCESS
-        self.response_parser = OpenAsiResponseParser(self.response_xml)
+        self.response_parser = self.OpenAsiResponseParser(self.response_xml)
 
     def test_init(self):
         self.assertEqual(self.response_parser.response_xml, self.response_xml)
@@ -147,7 +162,7 @@ class TestOpenAsiResponseParser(unittest.TestCase):
 
     def test_extract_values_with_missing_info(self):
         xml_response_missing_info = TEST_OPEN_ASI_RESPONSE_XML_MISSING_VALUES
-        response_parser_missing_info = OpenAsiResponseParser(xml_response_missing_info)
+        response_parser_missing_info = self.OpenAsiResponseParser(xml_response_missing_info)
         self.assertEqual(response_parser_missing_info.guid, TEST_RESP_GUID)
         self.assertEqual(response_parser_missing_info.org, None)
         self.assertEqual(response_parser_missing_info.branch, TEST_RESP_BRANCH)

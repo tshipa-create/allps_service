@@ -21,6 +21,7 @@ from util import normalize_xml
 
 ALLPS_WSDL_URL = "https://web2.intecon.co.za/allpsws_test/allps.asmx?wsdl"
 
+
 class TestServiceClient(unittest.TestCase):
     def setUp(self):
         self.wsdl_url = ALLPS_WSDL_URL
