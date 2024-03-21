@@ -11,7 +11,7 @@ pipelines:
             - pip # Use the pip cache
           script:
             - pip install -r requirements.txt --cache-dir ~/.cache/pip
-             - python -m unittest discover tests/
+            - python -m unittest discover tests/
       - step:
           name: 'Build and package'
           script:
