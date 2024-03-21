@@ -7,11 +7,11 @@ from unittest.mock import patch
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
-from main import EXPECTED_INSTALMENT_STATUS
-from model.edit_instalment import EditInstalment, EditInstalmentResponseParser
+
 from test_open_asi import TEST_RESP_GUID, TEST_RESP_ORG, TEST_RESP_BRANCH
-from test_get_instalment import TEST_PROMISSORY_ID, TEST_INST_NUM
+from test_get_instalment import TEST_PROMISSORY_ID, TEST_INST_NUM, EXPECTED_INSTALMENT_STATUS
 from util import normalize_xml, format_date_to_string
+from tests.test_base_setup import BaseTest
 
 
 TEST_EDIT_INSTALL_ACTION_DT = datetime(2024, 1, 30)
@@ -89,7 +89,14 @@ TEST_EDIT_INSTALL_RESPONSE_XML_MISSING_VALUES = f"""
         """
 
 
-class TestEditInstalment(unittest.TestCase):
+class TestEditInstalment(BaseTest):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        from model.edit_instalment import EditInstalment
+
+        cls.EditInstalment = EditInstalment
+
     def setUp(self):
         self.guid = TEST_RESP_GUID
         self.org_cd = TEST_RESP_ORG
@@ -97,7 +104,7 @@ class TestEditInstalment(unittest.TestCase):
         self.promissory_id = TEST_PROMISSORY_ID
         self.inst_num = TEST_INST_NUM
         self.new_action_dt = TEST_EDIT_INSTALL_ACTION_DT
-        self.edit_instalment = EditInstalment(
+        self.edit_instalment = self.EditInstalment(
             self.guid, self.org_cd, self.branch_cd, self.promissory_id, self.inst_num, self.new_action_dt
         )
         self.new_action_dt_str = format_date_to_string(self.new_action_dt)
@@ -112,10 +119,9 @@ class TestEditInstalment(unittest.TestCase):
 
     @patch("model.edit_instalment.logObject")
     def test_init_invalid_inst_num(self, mock_log):
-        EditInstalment(self.guid, self.org_cd, self.branch_cd, self.promissory_id, 1000, self.new_action_dt)
+        self.EditInstalment(self.guid, self.org_cd, self.branch_cd, self.promissory_id, 1000, self.new_action_dt)
         mock_log.error.assert_called_once()
 
-    @patch("model.edit_instalment.config.ALLPS_NEW_TRACK_CODE", TEST_EDIT_INSTALL_RESP_NEW_TRACK_CODE)
     def test_to_xml(self):
         expected_xml = normalize_xml(TEST_EDIT_INSTALL_REQUEST_XML)
         self.assertEqual(normalize_xml(self.edit_instalment.to_xml().strip()), expected_xml.strip())
@@ -164,10 +170,17 @@ class TestEditInstalment(unittest.TestCase):
         self.assertDictEqual(self.edit_instalment.xml_response_to_dict(xml_response), excepted_dict)
 
 
-class TestEditInstalmentResponseParser(unittest.TestCase):
+class TestEditInstalmentResponseParser(BaseTest):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        from model.edit_instalment import EditInstalmentResponseParser
+
+        cls.EditInstalmentResponseParser = EditInstalmentResponseParser
+
     def setUp(self):
         self.response_xml = TEST_EDIT_INSTALL_RESPONSE_XML_SUCCESS
-        self.response_parser = EditInstalmentResponseParser(self.response_xml)
+        self.response_parser = self.EditInstalmentResponseParser(self.response_xml)
 
     def test_extract_values(self):
         self.assertEqual(self.response_parser.inst_num, str(TEST_INST_NUM))
@@ -176,7 +189,7 @@ class TestEditInstalmentResponseParser(unittest.TestCase):
         self.assertEqual(self.response_parser.reply_str, TEST_EDIT_INSTALL_RESP_REPLY_STR_SUCCESS)
 
     def test_extract_values_with_missing_info(self):
-        response_parser = EditInstalmentResponseParser(TEST_EDIT_INSTALL_RESPONSE_XML_MISSING_VALUES)
+        response_parser = self.EditInstalmentResponseParser(TEST_EDIT_INSTALL_RESPONSE_XML_MISSING_VALUES)
         self.assertEqual(response_parser.inst_num, str(TEST_INST_NUM))
         self.assertEqual(response_parser.new_action_dt, None)
         self.assertEqual(response_parser.reply_cd, TEST_EDIT_INSTALL_RESP_REPLY_CD_SUCCESS)
