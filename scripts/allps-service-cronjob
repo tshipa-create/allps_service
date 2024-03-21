@@ -1,0 +1,5 @@
+# Every day at 3 AM UTC
+0 3 * * * ec2-user source .venv/bin/activate && python3 main.py
+
+# Every sunday cleanup local rotated logs, since they are in CloudWatch as well
+0 0 * * 7 ec2-user rm logs/*.log.*

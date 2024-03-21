@@ -1,0 +1,22 @@
+#!/bin/bash
+cd /home/ec2-user/
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+#Create log dir
+mkdir logs
+chown ec2-user.ec2-user logs
+chmod 755 logs
+
+# Update cronjob
+sudo mv /home/ec2-user/scripts/allps-service-cronjob /etc/cron.d/allps-service-cronjob
+sudo chown root.root /etc/cron.d/allps-service-cronjob
+sudo chmod 644 /etc/cron.d/allps-service-cronjob
+
+# Remove carriage return from cronjob. For some reason, the file has carriage return when it is copied from Windows to Linux
+sudo sed -i 's/\r$//' /etc/cron.d/allps-service-cronjob
+
+# Update CloudWatch log configuration
+sudo mv /home/ec2-user/scripts/amazon-cloudwatch-agent.json /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json

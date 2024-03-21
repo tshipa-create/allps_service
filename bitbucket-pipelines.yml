@@ -1,0 +1,49 @@
+image: python:3.10
+definitions:
+  caches:
+    pip: ~/.cache/pip
+pipelines:
+  branches:
+    master:
+      - step:
+          name: "Test"
+          caches:
+            - pip # Use the pip cache
+          script:
+            - pip install -r requirements.txt --cache-dir ~/.cache/pip
+             - python -m unittest discover tests/
+      - step:
+          name: 'Build and package'
+          script:
+            - apt-get update && apt-get install -y zip
+            - zip code.zip appspec.yml *.py requirements.txt scripts/*
+          artifacts:
+            - code.zip
+      - step: 
+          name: 'Upload to S3'
+          script:
+            - pipe: atlassian/aws-code-deploy:1.1.1
+              variables:
+                DEBUG: 'true'
+                AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                APPLICATION_NAME: $APPLICATION_NAME
+                S3_BUCKET: $S3_BUCKET
+                COMMAND: 'upload'
+                ZIP_FILE: 'code.zip'
+      - step:
+          name: 'Deploy to PROD'
+          deployment: production
+          trigger: 'manual'
+          script:
+            - pipe: atlassian/aws-code-deploy:1.1.1
+              variables:
+                AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                COMMAND: 'deploy'
+                APPLICATION_NAME: $APPLICATION_NAME
+                S3_BUCKET: $S3_BUCKET
+                DEPLOYMENT_GROUP: $DEPLOYMENT_GROUP
+                FILE_EXISTS_BEHAVIOR: 'OVERWRITE'
