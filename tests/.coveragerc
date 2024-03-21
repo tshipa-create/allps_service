@@ -1,0 +1,4 @@
+[run] # exclude tests and site-packages from coverage
+omit = 
+    */tests/*
+    */site-packages/*
