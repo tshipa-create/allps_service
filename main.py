@@ -4,7 +4,6 @@ from logger_config import logger
 from db import fetch_retry_loans_data, fetch_daily_monitoring_data
 import config
 from slack_integration import slack_post_msg
-from datetime import timedelta
 
 EXPECTED_INSTALMENT_STATUS = "INCOMPLETE"
 

@@ -28,6 +28,7 @@ class BaseTest(unittest.TestCase):
                 "ALLPS_NEW_TRACK_CODE": "07",
                 "SLACK_TIMEOUT": "60",
                 "ENABLE_SLACK_NOTIFICATIONS": "mock_enable",
+                "ALLPS_RESPONSE_CODES_RETRY_LIST": "1800, 331",
             },
         )
         cls.env_patcher = patcher.start()
