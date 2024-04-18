@@ -1,9 +1,10 @@
+from datetime import datetime, timedelta
 from model import service_client, open_asi, edit_instalment, get_instalment
 import config
 from db import save_allps_response_to_snowflake
 from util import normalize_xml, get_reply_code_and_message, is_auth_guid
 import xmltodict
-from app_logging import logObject
+from logger_config import logger
 
 
 ALLPS_WSDL_URL = f"{config.ALLPS_HOST}?wsdl"
@@ -21,9 +22,17 @@ class AllpsService:
         return cls._client
 
     @classmethod
+    def submit_req_and_log_response(cls, xml_req):
+        method_name = cls.get_method_name(xml_req)
+        xml_resp = cls.get_client().request_data(xml_req, method_name)
+        resp_code, resp_msg = get_reply_code_and_message(xml_resp, method_name)
+        logger.info(f'ALLPS {method_name} response_code: "{resp_code}", response_message: "{resp_msg}"')
+        save_allps_response_to_snowflake(resp_code, resp_msg, method_name, xml_req, xml_resp)
+        return xml_resp, resp_code
+
+    @classmethod
     def authenticate(cls):
         if cls._auth_response_parser is None:
-            client = cls.get_client()
             open_asi_auth = open_asi.OpenAsi(
                 uid=config.ALLPS_USER,
                 pwd=config.ALLPS_PASSWORD,
@@ -34,11 +43,7 @@ class AllpsService:
                 version=config.ALLPS_PRODUCT_VERSION,
             )
             xml_req = normalize_xml(open_asi_auth.to_xml())
-            method_name = cls.get_method_name(xml_req)
-            xml_resp = client.request_data(xml_req, method_name)
-            resp_code, resp_msg = get_reply_code_and_message(xml_resp, method_name)
-            logObject.warning('ALLPS Authentication response_code: "%s", response_message: "%s"', resp_code, resp_msg)
-            save_allps_response_to_snowflake(resp_code, resp_msg, method_name, xml_req, xml_resp)
+            xml_resp, _ = cls.submit_req_and_log_response(xml_req)
             cls._auth_response_parser = open_asi.OpenAsiResponseParser(xml_resp)
             return cls._auth_response_parser
         return cls._auth_response_parser
@@ -58,16 +63,12 @@ class AllpsService:
             inst_num=inst_num,
         )
         xml_req = normalize_xml(get_install.to_xml())
-        method_name = cls.get_method_name(xml_req)
-        xml_resp = cls.get_client().request_data(xml_req, method_name)
-        resp_code, resp_msg = get_reply_code_and_message(xml_resp, method_name)
-        logObject.warning('ALLPS Get_Instalment response_code: "%s", response_message: "%s"', resp_code, resp_msg)
-        save_allps_response_to_snowflake(resp_code, resp_msg, method_name, xml_req, xml_resp)
+        xml_resp, _ = cls.submit_req_and_log_response(xml_req)
         response_parser = get_instalment.GetInstalmentResponseParser(xml_resp)
         return response_parser
 
     @classmethod
-    def edit_instalment(cls, promissory_id: str, inst_num: int, new_action_dt: str):
+    def edit_instalment(cls, promissory_id: str, inst_num: int, new_action_dt: datetime.date):
         if cls._auth_response_parser is None:
             cls.authenticate()
         open_asi_auth_response_parser = cls._auth_response_parser
@@ -82,11 +83,24 @@ class AllpsService:
             new_action_dt=new_action_dt,
         )
         xml_req = normalize_xml(edit_install.to_xml())
-        method_name = cls.get_method_name(xml_req)
-        xml_resp = cls.get_client().request_data(xml_req, method_name)
-        resp_code, resp_msg = get_reply_code_and_message(xml_resp, method_name)
-        logObject.warning("ALLPS Edit_Instalment response_code: %s, response_message: %s", resp_code, resp_msg)
-        save_allps_response_to_snowflake(resp_code, resp_msg, method_name, xml_req, xml_resp)
+        xml_resp, resp_code = cls.submit_req_and_log_response(xml_req)
+        retry_count = 0
+        while resp_code in config.ALLPS_RESPONSE_CODES_RETRY_LIST:
+            retry_count += 1
+            new_action_dt = new_action_dt + timedelta(days=1)
+            logger.info(
+                f'Retry #{retry_count}: Retrying edit_instalment because of response_code: "{resp_code}" for promissory_id: "{promissory_id}", inst_num: "{inst_num}" and with new_action_dt: "{new_action_dt}"'
+            )
+            edit_install = edit_instalment.EditInstalment(
+                guid=open_asi_auth_response_parser.guid,
+                org_cd=open_asi_auth_response_parser.org,
+                branch_cd=open_asi_auth_response_parser.branch,
+                promissory_id=promissory_id,
+                inst_num=inst_num,
+                new_action_dt=new_action_dt,
+            )
+            xml_req = normalize_xml(edit_install.to_xml())
+            xml_resp, resp_code = cls.submit_req_and_log_response(xml_req)
         response_parser = edit_instalment.EditInstalmentResponseParser(xml_resp)
         return response_parser
 
@@ -94,11 +108,7 @@ class AllpsService:
     def close_asi(cls):
         close_asi = open_asi.CloseAsi(guid=cls._auth_response_parser.guid)
         xml_req = normalize_xml(close_asi.to_xml())
-        method_name = cls.get_method_name(xml_req)
-        xml_resp = cls.get_client().request_data(xml_req, method_name)
-        resp_code, resp_msg = get_reply_code_and_message(xml_resp, method_name)
-        logObject.warning("ALLPS Close_asi response_code: %s, response_message: %s", resp_code, resp_msg)
-        save_allps_response_to_snowflake(resp_code, resp_msg, method_name, xml_req, xml_resp)
+        cls.submit_req_and_log_response(xml_req)
 
     @classmethod
     def get_method_name(cls, xml_request: str):
@@ -106,5 +116,5 @@ class AllpsService:
             parsed_xml = xmltodict.parse(xml_request)
             return next(iter(parsed_xml["methods"]))
         except Exception as e:
-            logObject.error("Error parsing method name: %s", e)
+            logger.exception(f"Error parsing method name: {e}")
             return None

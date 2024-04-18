@@ -167,11 +167,11 @@ class TestOpenAsiResponseParser(BaseTest):
         self.assertEqual(response_parser_missing_info.org, None)
         self.assertEqual(response_parser_missing_info.branch, TEST_RESP_BRANCH)
 
-    @patch("model.open_asi.logObject")
+    @patch("model.open_asi.logger")
     def test_extract_values_with_exception(self, mock_log):
         self.response_parser.response_dict = None  # This will cause an exception in extract_values
         self.response_parser.extract_values()
-        mock_log.error.assert_called_once()
+        mock_log.exception.assert_called_once()
 
 
 if __name__ == "__main__":

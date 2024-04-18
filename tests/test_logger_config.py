@@ -5,10 +5,10 @@ import unittest
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
-from app_logging import find_project_root_folder
+from logger_config import find_project_root_folder
 
 
-class TestAppLogging(unittest.TestCase):
+class TestLoggerConfig(unittest.TestCase):
     def test_find_project_root_folder(self):
         current_path = os.path.abspath(__file__)
         expected_root_folder = os.path.dirname(os.path.dirname(current_path))

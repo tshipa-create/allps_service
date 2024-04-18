@@ -1,5 +1,5 @@
 from zeep import Client
-from app_logging import logObject
+from logger_config import logger
 
 
 class RequestClient:
@@ -9,8 +9,11 @@ class RequestClient:
     def request_data(self, xml_request: str, method_name: str):
         try:
             request_data = {"xmlrequest": xml_request}
-            logObject.warning("Requesting data from ALLPS: %s", method_name)
+            if method_name == "OpenAsi":
+                logger.info(f"Requesting data from ALLPS: {method_name} with Host: '{self.client.wsdl.location}'")
+            else:
+                logger.info(f"Requesting data from ALLPS: {method_name}")
             return self.client.service.Call(**request_data)
         except Exception as e:
-            logObject.error("Error requesting data from ALLPS: %s", e)
+            logger.exception(f"Error requesting data from ALLPS: {e}")
             return None

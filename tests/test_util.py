@@ -37,26 +37,26 @@ class TestUtilityFunctions(unittest.TestCase):
         self.assertEqual(code, TEST_RESP_REPLY_CD_SUCCESS)
         self.assertEqual(message, TEST_RESP_REPLY_STR_SUCCESS)
 
-    @patch("util.logObject")
+    @patch("util.logger")
     def test_is_auth_guid_true(self, mock_log):
         self.assertTrue(is_auth_guid(TEST_RESP_GUID))
-        mock_log.error.assert_not_called()
+        mock_log.exception.assert_not_called()
 
-    @patch("util.logObject")
+    @patch("util.logger")
     def test_is_auth_guid_false(self, mock_log):
         self.assertFalse(is_auth_guid(None))
-        mock_log.error.assert_called_once()
+        mock_log.exception.assert_called_once()
 
-    @patch("util.logObject")
+    @patch("util.logger")
     def test_check_instalment_status_mismatch(self, mock_log):
         self.assertFalse(check_instalment_status(INSTALLMENT_STATUS_MISMATCH, EXPECTED_INSTALMENT_STATUS))
-        mock_log.warning.assert_called_once()
+        mock_log.info.assert_called_once()
 
-    @patch("util.logObject")
+    @patch("util.logger")
     def test_check_instalment_not_in_future_future_date(self, mock_log):
         future_date = "20991231"
         self.assertFalse(check_instalment_not_in_future(future_date))
-        mock_log.warning.assert_called_once()
+        mock_log.info.assert_called_once()
 
     def test_validate_full_instalment_info_valid(self):
         installment_date = "20240101"
@@ -65,22 +65,20 @@ class TestUtilityFunctions(unittest.TestCase):
         )
 
     def test_installments_statistics_from_processings_no_installments(self):
-        with patch("util.logObject") as mock_log:
+        with patch("util.logger") as mock_log:
             installments_statistics_from_processings(0, 0)
             mock_log.warning.assert_called_with("RUN STATISTICS: No instalments to edit")
 
     def test_installments_statistics_from_processings_all_installments_edited(self):
-        with patch("util.logObject") as mock_log:
+        with patch("util.logger") as mock_log:
             installments_statistics_from_processings(3, 3)
-            mock_log.warning.assert_called_with("RUN STATISTICS: All instalments were edited")
+            mock_log.info.assert_called_with("RUN STATISTICS: All instalments were edited")
 
     def test_installments_statistics_from_processings_mismatch(self):
-        with patch("util.logObject") as mock_log:
+        with patch("util.logger") as mock_log:
             installments_statistics_from_processings(3, 2)
             mock_log.warning.assert_called_with(
-                "RUN STATISTICS: Mismatch between total instalments: %d and edited instalments: %d",
-                3,
-                2,
+                f"RUN STATISTICS: Mismatch between total instalments: {3} and edited instalments: {2}"
             )
 
 
