@@ -101,7 +101,7 @@ class TestGetInstalment(BaseTest):
         self.assertEqual(self.get_instalment.promissory_id, TEST_PROMISSORY_ID)
         self.assertEqual(self.get_instalment.inst_num, TEST_INST_NUM)
 
-    @patch("model.get_instalment.logObject")
+    @patch("model.get_instalment.logger")
     def test_init_invalid_inst_num(self, mock_log):
         self.GetInstalment(TEST_RESP_GUID, TEST_RESP_ORG, TEST_RESP_BRANCH, TEST_PROMISSORY_ID, 1000)
         mock_log.error.assert_called_once()
@@ -181,7 +181,7 @@ class TestGetInstalmentResponseParser(BaseTest):
         self.assertEqual(response_parser_missing_info.reply_cd, TEST_GET_INSTALL_RESP_REPLY_CD_SUCCESS)
         self.assertEqual(response_parser_missing_info.reply_str, TEST_GET_INSTALL_RESP_REPLY_STR_SUCCESS)
 
-    @patch("model.get_instalment.logObject")
+    @patch("model.get_instalment.logger")
     def test_extract_values_with_exception(self, mock_log):
         self.response_parser.response_dict = None  # This will cause an exception in extract_values
         self.response_parser.extract_values()

@@ -1,7 +1,7 @@
 import traceback
 import requests
 import config
-from app_logging import logObject
+from logger_config import logger
 import pandas as pd
 from collections import defaultdict
 
@@ -37,12 +37,8 @@ def slack_post_msg(df: pd.DataFrame):
         message = {"channel": "#data_team_allps_service", "username": "awsbot", "text": formatted_message["text"]}
         try:
             response = requests.post(slack_webhook_url, json=message, timeout=config.SLACK_TIMEOUT)
-            logObject.warning(
-                "Slack message posted to %s with response: %s",
-                slack_webhook_url,
-                response.text,
-            )
+            logger.warning(f"Slack message posted to {slack_webhook_url} with response: {response.text}")
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
-            logObject.error("Error posting message to Slack: %s", e)
+            logger.error(f"Error posting message to Slack: {e}")
             traceback.print_exc()

@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 import config
 import pandas as pd
-from app_logging import logObject
+from logger_config import logger
 from sqlalchemy import create_engine
 from snowflake.sqlalchemy import URL
 from sqlalchemy.pool import QueuePool
@@ -33,10 +33,12 @@ def fetch_retry_loans_data():
         engine = get_snowflake_engine()
         with engine.connect() as sf_connection:
             df = pd.read_sql(sql_query, sf_connection)
-            logObject.warning("Found %d retry loans data", len(df))
+            logger.warning(
+                f"Found {len(df)} retry loans data",
+            )
             return process_df(df)
     except Exception as e:
-        logObject.error("Error fetching retry loans data: %s", e)
+        logger.error(f"Error fetching retry loans data: {e}")
         return None
 
 
@@ -71,15 +73,16 @@ def save_allps_response_to_snowflake(
         engine = get_snowflake_engine()
         with engine.connect() as sf_connection:
             result = sf_connection.execute(insert_sql, data)
-            logObject.warning(
-                "Row %d inserted into Snowflake table: %s", result.rowcount, config.SF_ALLPS_XML_LOG_TABLE
+            logger.warning(
+                f"Row {result.rowcount} inserted into Snowflake table: {config.SF_SCHEMA}.{config.SF_ALLPS_XML_LOG_TABLE}"
             )
+
     except Exception as e:
-        logObject.error("Error saving ALLPS response to Snowflake: %s", e)
+        logger.error(f"Error saving ALLPS response to Snowflake: {e}")
 
 
 def fetch_daily_monitoring_data():
-    logObject.warning("Fetching daily monitoring data from Snowflake...")
+    logger.warning("Fetching daily monitoring data from Snowflake...")
     sql_query = """
                 SELECT
                     CURRENT_DATE() AS MONITORING_DATE,
@@ -102,8 +105,8 @@ def fetch_daily_monitoring_data():
         engine = get_snowflake_engine()
         with engine.connect() as sf_connection:
             df = pd.read_sql(sql_query, sf_connection)
-            logObject.warning("Found %d rows of daily monitoring data", len(df))
+            logger.warning(f"Found {len(df)} rows of daily monitoring data")
             return process_df(df)
     except Exception as e:
-        logObject.error("Error fetching daily monitoring data: %s", e)
+        logger.error(f"Error fetching daily monitoring data: {e}")
         return None

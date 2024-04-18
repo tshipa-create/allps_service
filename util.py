@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 import xmltodict
-from app_logging import logObject
+from logger_config import logger
 
 
 def get_reply_code_and_message(xml_response: str, method_name: str):
@@ -16,18 +16,16 @@ def format_date_to_string(date: datetime):
 
 def is_auth_guid(guid: str) -> bool:
     if guid is None:
-        logObject.error("Authentication failed. Cannot proceed with get_instalment")
+        logger.error("Authentication failed. Cannot proceed with get_instalment")
         return False
     return True
 
 
 def check_instalment_status(current_status: str, check_status: str) -> bool:
     if current_status == check_status:
-        logObject.info("Instalment status as expected: %s", check_status)
+        logger.info(f"Instalment status as expected: {check_status}")
         return True
-    logObject.warning(
-        "Instalment status not as expected, current_status: %s, expected_status: %s", current_status, check_status
-    )
+    logger.warning(f"Instalment status not as expected, current_status: {current_status}, check_status: {check_status}")
     return False
 
 
@@ -35,7 +33,7 @@ def check_instalment_not_in_future(installment_date: str) -> bool:
     current_utc_date = datetime.now(timezone.utc).date()
     installment_as_date = datetime.strptime(installment_date, "%Y%m%d").date()
     if installment_as_date > current_utc_date:
-        logObject.warning("Instalment date is in future: %s with current date: %s", installment_date, current_utc_date)
+        logger.warning(f"Instalment date is in future: {installment_date} with current date: {current_utc_date}")
         return False
     return True
 
@@ -48,14 +46,12 @@ def validate_full_instalment_info(current_status: str, check_status: str, instal
 
 def installments_statistics_from_processings(total_installments: int, edited_installments: int):
     if total_installments == 0:
-        logObject.warning("RUN STATISTICS: No instalments to edit")
+        logger.warning("RUN STATISTICS: No instalments to edit")
     elif total_installments == edited_installments:
-        logObject.warning("RUN STATISTICS: All instalments were edited")
+        logger.warning("RUN STATISTICS: All instalments were edited")
     elif total_installments != edited_installments:
-        logObject.warning(
-            "RUN STATISTICS: Mismatch between total instalments: %d and edited instalments: %d",
-            total_installments,
-            edited_installments,
+        logger.warning(
+            f"RUN STATISTICS: Mismatch between total instalments: {total_installments} and edited instalments: {edited_installments}"
         )
 
 
@@ -65,9 +61,9 @@ def normalize_xml(xml_str: str):
 
 def check_loans_data_fetch(df):
     if df is None:
-        logObject.error("Error fetching retry loans data. Exiting process...")
+        logger.error("Error fetching retry loans data. Exiting process...")
         return False
     elif df.empty:
-        logObject.warning("No retry loans data found. Exiting process...")
+        logger.warning("No retry loans data found. Exiting process...")
         return False
     return True

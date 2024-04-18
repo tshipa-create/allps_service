@@ -1,7 +1,7 @@
 from datetime import datetime
 import util
 import xmltodict
-from app_logging import logObject
+from logger_config import logger
 import config
 
 
@@ -10,7 +10,7 @@ class EditInstalment:
         self, guid: str, org_cd: str, branch_cd: str, promissory_id: str, inst_num: int, new_action_dt: datetime.date
     ):
         if not 1 <= inst_num <= 999:
-            logObject.error("inst_num (installment number) must be between 1 and 999")
+            logger.error("inst_num (installment number) must be between 1 and 999")
         self.guid = guid
         self.org_cd = org_cd
         self.branch_cd = branch_cd
@@ -53,4 +53,4 @@ class EditInstalmentResponseParser:
             self.reply_cd = edit_instalment_info.get("reply_cd", None)
             self.reply_str = edit_instalment_info.get("reply_str", None)
         except Exception as e:
-            logObject.error("Error extracting values from EditInstalmentResponseParser: %s", e)
+            logger.error(f"Error extracting values from EditInstalmentResponseParser: {e}")
