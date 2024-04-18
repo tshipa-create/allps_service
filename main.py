@@ -23,7 +23,7 @@ def main():
         logger.info(f"Processing row: {index + 1}")
         promissory_id = row["PROMISSORY_ID"]
         install_num = row["INST_NUM"]
-        new_action_dt = row["NEW_ACTION_DATE"] - timedelta(days=1)
+        new_action_dt = row["NEW_ACTION_DATE"]
         logger.info(f"Getting instalment for promissory_id: {promissory_id}, inst_num: {install_num}")
         get_instalment_response_parser = allps_service_instance.get_instalment(
             promissory_id=promissory_id, inst_num=install_num
