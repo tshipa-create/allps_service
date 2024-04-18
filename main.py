@@ -43,7 +43,6 @@ def main():
             promissory_id=promissory_id, inst_num=install_num, new_action_dt=new_action_dt
         )
         count_edit_instalments += 1
-        exit(1)
     util.installments_statistics_from_processings(len(df), count_edit_instalments)
     allps_service_instance.close_asi()
     if config.ENABLE_SLACK_NOTIFICATIONS:
