@@ -33,12 +33,12 @@ def fetch_retry_loans_data():
         engine = get_snowflake_engine()
         with engine.connect() as sf_connection:
             df = pd.read_sql(sql_query, sf_connection)
-            logger.warning(
+            logger.info(
                 f"Found {len(df)} retry loans data",
             )
             return process_df(df)
     except Exception as e:
-        logger.error(f"Error fetching retry loans data: {e}")
+        logger.exception(f"Error fetching retry loans data: {e}")
         return None
 
 
@@ -73,16 +73,16 @@ def save_allps_response_to_snowflake(
         engine = get_snowflake_engine()
         with engine.connect() as sf_connection:
             result = sf_connection.execute(insert_sql, data)
-            logger.warning(
+            logger.info(
                 f"Row {result.rowcount} inserted into Snowflake table: {config.SF_SCHEMA}.{config.SF_ALLPS_XML_LOG_TABLE}"
             )
 
     except Exception as e:
-        logger.error(f"Error saving ALLPS response to Snowflake: {e}")
+        logger.exception(f"Error saving ALLPS response to Snowflake: {e}")
 
 
 def fetch_daily_monitoring_data():
-    logger.warning("Fetching daily monitoring data from Snowflake...")
+    logger.info("Fetching daily monitoring data from Snowflake...")
     sql_query = """
                 SELECT
                     CURRENT_DATE() AS MONITORING_DATE,
@@ -105,8 +105,8 @@ def fetch_daily_monitoring_data():
         engine = get_snowflake_engine()
         with engine.connect() as sf_connection:
             df = pd.read_sql(sql_query, sf_connection)
-            logger.warning(f"Found {len(df)} rows of daily monitoring data")
+            logger.info(f"Found {len(df)} rows of daily monitoring data")
             return process_df(df)
     except Exception as e:
-        logger.error(f"Error fetching daily monitoring data: {e}")
+        logger.exception(f"Error fetching daily monitoring data: {e}")
         return None

@@ -51,7 +51,7 @@ class OpenAsiResponseParser:
             self.reply_cd = open_asi_info.get("reply_cd", None)
             self.reply_str = open_asi_info.get("reply_str", None)
         except Exception as e:
-            logger.error(f"Error extracting values from OpenAsiResponseParser: {e}")
+            logger.exception(f"Error extracting values from OpenAsiResponseParser: {e}")
 
 
 class CloseAsi:

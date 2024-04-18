@@ -5,7 +5,7 @@ from logger_config import logger
 class GetInstalment:
     def __init__(self, guid: str, org_cd: str, branch_cd: str, promissory_id: str, inst_num: int):
         if not 1 <= inst_num <= 999:
-            logger.error("inst_num (installment number) must be between 1 and 999")
+            logger.exception("inst_num (installment number) must be between 1 and 999")
         self.guid = guid
         self.org_cd = org_cd
         self.branch_cd = branch_cd
@@ -44,4 +44,4 @@ class GetInstalmentResponseParser:
             self.reply_cd = instalment_info.get("reply_cd", None)
             self.reply_str = instalment_info.get("reply_str", None)
         except Exception as e:
-            logger.error(f"Error extracting values from GetInstalmentResponseParser: {e}")
+            logger.exception(f"Error extracting values from GetInstalmentResponseParser: {e}")

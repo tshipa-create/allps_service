@@ -26,7 +26,7 @@ class AllpsService:
         method_name = cls.get_method_name(xml_req)
         xml_resp = cls.get_client().request_data(xml_req, method_name)
         resp_code, resp_msg = get_reply_code_and_message(xml_resp, method_name)
-        logger.warning(f'ALLPS {method_name} response_code: "{resp_code}", response_message: "{resp_msg}"')
+        logger.info(f'ALLPS {method_name} response_code: "{resp_code}", response_message: "{resp_msg}"')
         save_allps_response_to_snowflake(resp_code, resp_msg, method_name, xml_req, xml_resp)
         return xml_resp, resp_code
 
@@ -88,7 +88,7 @@ class AllpsService:
         while resp_code in config.ALLPS_RESPONSE_CODES_RETRY_LIST:
             retry_count += 1
             new_action_dt = new_action_dt + timedelta(days=1)
-            logger.warning(
+            logger.info(
                 f'Retry #{retry_count}: Retrying edit_instalment because of response_code: "{resp_code}" for promissory_id: "{promissory_id}", inst_num: "{inst_num}" and with new_action_dt: "{new_action_dt}"'
             )
             edit_install = edit_instalment.EditInstalment(
@@ -116,5 +116,5 @@ class AllpsService:
             parsed_xml = xmltodict.parse(xml_request)
             return next(iter(parsed_xml["methods"]))
         except Exception as e:
-            logger.error(f"Error parsing method name: {e}")
+            logger.exception(f"Error parsing method name: {e}")
             return None

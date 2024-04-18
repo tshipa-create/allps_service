@@ -16,7 +16,7 @@ def format_date_to_string(date: datetime):
 
 def is_auth_guid(guid: str) -> bool:
     if guid is None:
-        logger.error("Authentication failed. Cannot proceed with get_instalment")
+        logger.exception("Authentication failed. Cannot proceed with get_instalment")
         return False
     return True
 
@@ -25,7 +25,7 @@ def check_instalment_status(current_status: str, check_status: str) -> bool:
     if current_status == check_status:
         logger.info(f"Instalment status as expected: {check_status}")
         return True
-    logger.warning(f"Instalment status not as expected, current_status: {current_status}, check_status: {check_status}")
+    logger.info(f"Instalment status not as expected, current_status: {current_status}, check_status: {check_status}")
     return False
 
 
@@ -33,7 +33,7 @@ def check_instalment_not_in_future(installment_date: str) -> bool:
     current_utc_date = datetime.now(timezone.utc).date()
     installment_as_date = datetime.strptime(installment_date, "%Y%m%d").date()
     if installment_as_date > current_utc_date:
-        logger.warning(f"Instalment date is in future: {installment_date} with current date: {current_utc_date}")
+        logger.info(f"Instalment date is in future: {installment_date} with current date: {current_utc_date}")
         return False
     return True
 
@@ -48,7 +48,7 @@ def installments_statistics_from_processings(total_installments: int, edited_ins
     if total_installments == 0:
         logger.warning("RUN STATISTICS: No instalments to edit")
     elif total_installments == edited_installments:
-        logger.warning("RUN STATISTICS: All instalments were edited")
+        logger.info("RUN STATISTICS: All instalments were edited")
     elif total_installments != edited_installments:
         logger.warning(
             f"RUN STATISTICS: Mismatch between total instalments: {total_installments} and edited instalments: {edited_installments}"
@@ -61,9 +61,9 @@ def normalize_xml(xml_str: str):
 
 def check_loans_data_fetch(df):
     if df is None:
-        logger.error("Error fetching retry loans data. Exiting process...")
+        logger.exception("Error fetching retry loans data. Exiting process...")
         return False
     elif df.empty:
-        logger.warning("No retry loans data found. Exiting process...")
+        logger.info("No retry loans data found. Exiting process...")
         return False
     return True

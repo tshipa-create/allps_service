@@ -104,7 +104,7 @@ class TestGetInstalment(BaseTest):
     @patch("model.get_instalment.logger")
     def test_init_invalid_inst_num(self, mock_log):
         self.GetInstalment(TEST_RESP_GUID, TEST_RESP_ORG, TEST_RESP_BRANCH, TEST_PROMISSORY_ID, 1000)
-        mock_log.error.assert_called_once()
+        mock_log.exception.assert_called_once()
 
     def test_to_xml(self):
         expected_xml = normalize_xml(TEST_GET_INSTALL_REQUEST_XML)
@@ -185,7 +185,7 @@ class TestGetInstalmentResponseParser(BaseTest):
     def test_extract_values_with_exception(self, mock_log):
         self.response_parser.response_dict = None  # This will cause an exception in extract_values
         self.response_parser.extract_values()
-        mock_log.error.assert_called_once()
+        mock_log.exception.assert_called_once()
 
 
 if __name__ == "__main__":

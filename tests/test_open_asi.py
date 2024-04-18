@@ -171,7 +171,7 @@ class TestOpenAsiResponseParser(BaseTest):
     def test_extract_values_with_exception(self, mock_log):
         self.response_parser.response_dict = None  # This will cause an exception in extract_values
         self.response_parser.extract_values()
-        mock_log.error.assert_called_once()
+        mock_log.exception.assert_called_once()
 
 
 if __name__ == "__main__":
