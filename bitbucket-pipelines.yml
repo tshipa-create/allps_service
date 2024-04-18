@@ -16,7 +16,7 @@ pipelines:
           name: 'Build and package'
           script:
             - apt-get update && apt-get install -y zip
-            - zip code.zip appspec.yml *.py requirements.txt scripts/*
+            - zip code.zip appspec.yml *.py requirements.txt scripts/* model/*.py
           artifacts:
             - code.zip
       - step: 
