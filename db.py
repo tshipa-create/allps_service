@@ -5,41 +5,53 @@ from logger_config import logger
 from sqlalchemy import create_engine
 from snowflake.sqlalchemy import URL
 from sqlalchemy.pool import QueuePool
+from snowflake.connector.pandas_tools import pd_writer
+import util
+
+# Global Engine
+engine = create_engine(
+    URL(account=config.SF_ACCOUNT, user=config.SF_USER, password=config.SF_PASSWORD, database=config.SF_DATABASE),
+    poolclass=QueuePool,
+    pool_size=5,
+    max_overflow=10,
+    pool_timeout=30,
+    pool_recycle=3600,
+)
 
 
-def get_snowflake_engine():
-    engine = create_engine(
-        URL(account=config.SF_ACCOUNT, user=config.SF_USER, password=config.SF_PASSWORD, database=config.SF_DATABASE),
-        poolclass=QueuePool,
-        pool_size=5,
-        max_overflow=10,
-        pool_timeout=30,
-        pool_recycle=3600,
-    )
-    return engine
-
-
-def process_df(df: pd.DataFrame):
-    df.columns = df.columns.str.upper()
-    return df
-
-
-def fetch_retry_loans_data():
+# TODO: DEV to PROD
+def fetch_raw_retry_loans_data():
     sql_query = """
-                SELECT * FROM PLANET42_LIVE_DB.DATA_TEAM.VIEW_ALLPS_RETRY_INSTALMENTS
+                SELECT * FROM PLANET42_LIVE_DB.DATA_TEAM_DEV.VIEW_ALLPS_RETRY_INSTALMENTS
                 ORDER BY INST_NUM  DESC
                 """
     try:
-        engine = get_snowflake_engine()
         with engine.connect() as sf_connection:
             df = pd.read_sql(sql_query, sf_connection)
             logger.info(
                 f"Found {len(df)} retry loans data",
             )
-            return process_df(df)
+            return util.process_df(df)
     except Exception as e:
         logger.exception(f"Error fetching retry loans data: {e}")
         return None
+
+
+# TODO: Append?
+def general_save_to_snowflake(df: pd.DataFrame, table_name: str):
+    try:
+        with engine.connect() as sf_connection:
+            df.to_sql(
+                table_name.lower(),
+                sf_connection,
+                schema=config.SF_SCHEMA,
+                if_exists="replace",
+                index=False,
+                method=pd_writer,
+            )
+            logger.info(f"Data saved to Snowflake table: {config.SF_SCHEMA}.{table_name}")
+    except Exception as e:
+        logger.exception(f"Error saving data to Snowflake: {e}")
 
 
 def save_allps_response_to_snowflake(
@@ -70,7 +82,6 @@ def save_allps_response_to_snowflake(
             request_xml,
             response_xml,
         )
-        engine = get_snowflake_engine()
         with engine.connect() as sf_connection:
             result = sf_connection.execute(insert_sql, data)
             logger.info(
@@ -102,11 +113,10 @@ def fetch_daily_monitoring_data():
                     RESPONSE_MESSAGE
                 """
     try:
-        engine = get_snowflake_engine()
         with engine.connect() as sf_connection:
             df = pd.read_sql(sql_query, sf_connection)
             logger.info(f"Found {len(df)} rows of daily monitoring data")
-            return process_df(df)
+            return util.process_df(df)
     except Exception as e:
         logger.exception(f"Error fetching daily monitoring data: {e}")
         return None

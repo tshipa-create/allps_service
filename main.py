@@ -1,17 +1,29 @@
 from model.allps_service import AllpsService
 import util
 from logger_config import logger
-from db import fetch_retry_loans_data, fetch_daily_monitoring_data
+from db import fetch_raw_retry_loans_data, fetch_daily_monitoring_data, general_save_to_snowflake
 import config
 from slack_integration import slack_post_msg
+import json
 
 EXPECTED_INSTALMENT_STATUS = "INCOMPLETE"
 
 
 def main():
-    allps_service_instance = AllpsService()
-    allps_service_instance.authenticate()
-    df = fetch_retry_loans_data()
+    # allps_service_instance = AllpsService()
+    # allps_service_instance.authenticate()
+    df = fetch_raw_retry_loans_data()
+    from icecream import ic
+    import pandas as pd
+    df_filtered = util.filter_raw_retry_loans_data(df, config.RAW_RETRY_LOANDS_FILTERS_JSON)
+    ic(df_filtered)
+    ic(config.RAW_RETRY_LOANDS_FILTERS_JSON)
+    include_logic = util.add_days_flag_to_include_logic(config.RAW_RETRY_LOANDS_FILTERS_JSON)
+    df["INCLUDE_LOGIC"] = json.dumps(include_logic)
+    df.insert(0, "CREATED_AT_UTC", pd.to_datetime("now", utc=True))
+    util.calculate_days_before_next_instalment_flag(df, include_logic)
+    general_save_to_snowflake(df, "RAW_RETRY_LOANS_DATA_IGNAR")
+    exit()
     if util.check_loans_data_fetch(df) is False:
         allps_service_instance.close_asi()
         return
