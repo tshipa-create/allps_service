@@ -37,7 +37,6 @@ def fetch_raw_retry_loans_data():
         return None
 
 
-# TODO: Append?
 def general_save_to_snowflake(df: pd.DataFrame, table_name: str):
     try:
         with engine.connect() as sf_connection:
@@ -45,7 +44,7 @@ def general_save_to_snowflake(df: pd.DataFrame, table_name: str):
                 table_name.lower(),
                 sf_connection,
                 schema=config.SF_SCHEMA,
-                if_exists="replace",
+                if_exists="append",
                 index=False,
                 method=pd_writer,
             )

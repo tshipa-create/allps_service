@@ -70,21 +70,6 @@ def check_loans_data_fetch(df):
     return True
 
 
-def filter_raw_retry_loans_data(df: pd.DataFrame, filters: dict):
-    query_parts = []
-
-    for key, value in filters.items():
-        if isinstance(value, bool) and value:
-            query_parts.append(f"{key}")
-        elif key == "DAYS_BEFORE_NEXT_INSTALMENT_FILTER" and isinstance(value, str):
-            query_parts.append(value)
-
-    query_string = " & ".join(query_parts)
-    logger.info(f"Final Query String: {query_string}")
-    filtered_df = df.query(query_string)
-    return filtered_df
-
-
 def process_df(df: pd.DataFrame):
     df.columns = df.columns.str.upper()
     for column in df.columns:
@@ -97,15 +82,3 @@ def process_df(df: pd.DataFrame):
             except Exception as e:
                 logger.error(f"Error converting column {column} to datetime: {e}")
     return df
-
-def add_days_flag_to_include_logic(include_logic: dict):
-    # idea is that if the filter is more than 30 places, there is probably a filter logic in there and its used.
-    if len(include_logic["DAYS_BEFORE_NEXT_INSTALMENT_FILTER"]) > 30:
-        new_dict = {"DAYS_BEFORE_NEXT_INSTALMENT_FLAG": True}
-        new_dict.update(include_logic)
-    return new_dict
-
-
-def calculate_days_before_next_instalment_flag(df: pd.DataFrame, days_before_next_instalment_filter: str):
-    if len(days_before_next_instalment_filter["DAYS_BEFORE_NEXT_INSTALMENT_FILTER"]) > 30:
-        print(days_before_next_instalment_filter["DAYS_BEFORE_NEXT_INSTALMENT_FILTER"])
