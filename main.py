@@ -21,7 +21,7 @@ def main():
     df = calculate_days_before_next_instalment_flag(df, include_logic)
     logger.info("Saving raw retry loans data to Snowflake")
     general_save_to_snowflake(df, config.SF_RETRY_RAW_LOANS_DATA_TABLE)
-    df_filtered = filter_raw_retry_loans_data(df, config.RAW_RETRY_LOANDS_FILTERS_JSON)
+    df_filtered = filter_raw_retry_loans_data(df, config.RAW_RETRY_LOANDS_FILTERS_JSON).reset_index(drop=True)
     if util.check_loans_data_fetch(df_filtered) is False:
         allps_service_instance.close_asi()
         return
