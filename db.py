@@ -31,7 +31,7 @@ def fetch_raw_retry_loans_data():
             logger.info(
                 f"Found {len(df)} raw retry loans data",
             )
-            return util.process_df(df)
+            return util.add_tz_to_df_date_cols(df)
     except Exception as e:
         logger.exception(f"Error fetching raw retry loans data: {e}")
         return None
@@ -115,7 +115,7 @@ def fetch_daily_monitoring_data():
         with engine.connect() as sf_connection:
             df = pd.read_sql(sql_query, sf_connection)
             logger.info(f"Found {len(df)} rows of daily monitoring data")
-            return util.process_df(df)
+            return util.add_tz_to_df_date_cols(df)
     except Exception as e:
         logger.exception(f"Error fetching daily monitoring data: {e}")
         return None

@@ -70,7 +70,7 @@ def check_loans_data_fetch(df):
     return True
 
 
-def process_df(df: pd.DataFrame):
+def add_tz_to_df_date_cols(df: pd.DataFrame):
     df.columns = df.columns.str.upper()
     for column in df.columns:
         if (
