@@ -49,15 +49,6 @@ def filter_raw_retry_loans_data(df: pd.DataFrame, filters: dict):
             query_parts.append(value)
 
     query_string = " & ".join(query_parts)
-    logger.info(f"Final Query String: {query_string}")
-    filtered_df = df.query(query_string)
-    df = keep_recent_instalment_per_promissory(filtered_df)
+    logger.info(f"Raw retry loan data filter: {query_string}")
+    df = df.query(query_string)
     return df
-
-
-def keep_recent_instalment_per_promissory(df: pd.DataFrame):
-    df = df.sort_values(by=["PROMISSORY_ID", "RESPONSE_DT"], ascending=[True, False])
-    df["ROW_NUMBER"] = df.groupby("PROMISSORY_ID").cumcount()
-    # Filtering to keep only the first row of each group
-    df_latest_entries = df[df["ROW_NUMBER"] == 0].drop("ROW_NUMBER", axis=1)
-    return df_latest_entries

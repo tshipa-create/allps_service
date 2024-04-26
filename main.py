@@ -14,22 +14,20 @@ EXPECTED_INSTALMENT_STATUS = "INCOMPLETE"
 
 
 def main():
-    # allps_service_instance = AllpsService()
-    # allps_service_instance.authenticate()
+    allps_service_instance = AllpsService()
+    allps_service_instance.authenticate()
     df = fetch_raw_retry_loans_data()
-    from icecream import ic
-
-    df_filtered = filter_raw_retry_loans_data(df, config.RAW_RETRY_LOANDS_FILTERS_JSON)
     include_logic = add_days_flag_to_include_logic_dict(config.RAW_RETRY_LOANDS_FILTERS_JSON)
     df = calculate_days_before_next_instalment_flag(df, include_logic)
-    general_save_to_snowflake(df, "RAW_RETRY_LOANS_DATA_IGNAR")  # TODO: table name to config
-    exit()
-    if util.check_loans_data_fetch(df) is False:
+    logger.info("Saving raw retry loans data to Snowflake")
+    general_save_to_snowflake(df, config.SF_RETRY_RAW_LOANS_DATA_TABLE)
+    df_filtered = filter_raw_retry_loans_data(df, config.RAW_RETRY_LOANDS_FILTERS_JSON)
+    if util.check_loans_data_fetch(df_filtered) is False:
         allps_service_instance.close_asi()
         return
     logger.info("Starting process of editing instalments...")
     count_edit_instalments = 0
-    for index, row in df.iterrows():
+    for index, row in df_filtered.iterrows():
         logger.info("-" * 100)
         logger.info(f"Processing row: {index + 1}")
         promissory_id = row["PROMISSORY_ID"]

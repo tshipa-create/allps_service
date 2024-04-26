@@ -65,7 +65,7 @@ def check_loans_data_fetch(df):
         logger.exception("Error fetching retry loans data. Exiting process...")
         return False
     elif df.empty:
-        logger.info("No retry loans data found. Exiting process...")
+        logger.info("No filtered retry loans data found. Exiting process...")
         return False
     return True
 

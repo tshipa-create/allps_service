@@ -29,11 +29,11 @@ def fetch_raw_retry_loans_data():
         with engine.connect() as sf_connection:
             df = pd.read_sql(sql_query, sf_connection)
             logger.info(
-                f"Found {len(df)} retry loans data",
+                f"Found {len(df)} raw retry loans data",
             )
             return util.process_df(df)
     except Exception as e:
-        logger.exception(f"Error fetching retry loans data: {e}")
+        logger.exception(f"Error fetching raw retry loans data: {e}")
         return None
 
 
