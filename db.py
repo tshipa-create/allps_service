@@ -19,10 +19,9 @@ engine = create_engine(
 )
 
 
-# TODO: DEV to PROD
 def fetch_raw_retry_loans_data():
-    sql_query = """
-                SELECT * FROM PLANET42_LIVE_DB.DATA_TEAM_DEV.VIEW_ALLPS_RETRY_INSTALMENTS
+    sql_query = f"""
+                SELECT * FROM PLANET42_LIVE_DB.{config.SF_SCHEMA}.VIEW_ALLPS_RETRY_INSTALMENTS
                 ORDER BY INST_NUM  DESC
                 """
     try:
