@@ -1,3 +1,4 @@
+import json
 import unittest
 from unittest.mock import patch
 
@@ -29,6 +30,19 @@ class BaseTest(unittest.TestCase):
                 "SLACK_TIMEOUT": "60",
                 "ENABLE_SLACK_NOTIFICATIONS": "mock_enable",
                 "ALLPS_RESPONSE_CODES_RETRY_LIST": "1800, 331",
+                "RAW_RETRY_LOANS_FILTERS_JSON": json.dumps(
+                    {
+                        "DAYS_BEFORE_NEXT_INSTALMENT_FILTER": "DAYS_BEFORE_NEXT_INSTALMENT > 10",
+                        "MANDATE_IS_NOT_TRACKING": True,
+                        "NO_BREAKDOWN_TASK": True,
+                        "NO_PTP": True,
+                        "INSTALMENT_HAS_NOT_BEEN_EDITED": True,
+                        "LAST_TWO_INSTALMENTS_HAS_ONE_FAILED_INSTALMENTS": True,
+                        "NO_TWO_CONSECUTIVE_FAILED_INSTALMENTS": True,
+                        "HAS_MORE_THAN_HALF_OF_PAYMENT_AMOUNT_MISSING": True,
+                    }
+                ),
+                "SF_RETRY_RAW_LOANS_DATA_TABLE": "mock_retry_raw_loans_data_table",
             },
         )
         cls.env_patcher = patcher.start()
