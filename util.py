@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import pandas as pd
 import xmltodict
 from logger_config import logger
 
@@ -25,15 +26,18 @@ def check_instalment_status(current_status: str, check_status: str) -> bool:
     if current_status == check_status:
         logger.info(f"Instalment status as expected: {check_status}")
         return True
-    logger.info(f"Instalment status not as expected, current_status: {current_status}, check_status: {check_status}")
+    logger.warning(f"Instalment status not as expected, current_status: {current_status}, check_status: {check_status}")
     return False
 
 
 def check_instalment_not_in_future(installment_date: str) -> bool:
+    if installment_date is None:
+        logger.exception("Instalment date is None. ")
+        return False
     current_utc_date = datetime.now(timezone.utc).date()
     installment_as_date = datetime.strptime(installment_date, "%Y%m%d").date()
     if installment_as_date > current_utc_date:
-        logger.info(f"Instalment date is in future: {installment_date} with current date: {current_utc_date}")
+        logger.warning(f"Instalment date is in future: {installment_date} with current date: {current_utc_date}")
         return False
     return True
 
@@ -64,6 +68,20 @@ def check_loans_data_fetch(df):
         logger.exception("Error fetching retry loans data. Exiting process...")
         return False
     elif df.empty:
-        logger.info("No retry loans data found. Exiting process...")
+        logger.warning("No filtered retry loans data found. Exiting process...")
         return False
     return True
+
+
+def add_tz_to_df_date_cols(df: pd.DataFrame):
+    df.columns = df.columns.str.upper()
+    for column in df.columns:
+        if (
+            df[column].dtype == "datetime64[ns]"
+        ):  # add timezone to datetime columns, so they would be saved correctly in Snowflake
+            try:
+                df[column] = pd.to_datetime(df[column], format="%Y-%m-%d %H:%M:%S.%f", utc=True)
+                logger.info(f'Successfully converted column "{column}" to datetime with timezone')
+            except Exception as e:
+                logger.error(f"Error converting column {column} to datetime: {e}")
+    return df

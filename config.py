@@ -1,4 +1,5 @@
 from os import environ, path
+import json
 from dotenv import load_dotenv
 
 working_directory = path.dirname(__file__)
@@ -29,3 +30,6 @@ ALLPS_RESPONSE_CODES_RETRY_LIST = [item.strip() for item in environ["ALLPS_RESPO
 
 SLACK_TIMEOUT = int(environ["SLACK_TIMEOUT"])
 ENABLE_SLACK_NOTIFICATIONS = bool(environ.get("ENABLE_SLACK_NOTIFICATIONS", False).lower() == "true")
+
+RAW_RETRY_LOANS_FILTERS_JSON = json.loads(environ["RAW_RETRY_LOANS_FILTERS_JSON"])
+SF_RETRY_RAW_LOANS_DATA_TABLE = environ["SF_RETRY_RAW_LOANS_DATA_TABLE"]
