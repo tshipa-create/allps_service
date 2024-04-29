@@ -7,12 +7,8 @@ DAYS_BEFORE_NEXT_INSTALMENT_FLAG = "DAYS_BEFORE_NEXT_INSTALMENT_FLAG"
 
 
 def add_days_flag_to_include_logic_dict(include_logic: dict):
-    if DAYS_BEFORE_NEXT_INSTALMENT_FILTER in include_logic:
-        new_dict = {DAYS_BEFORE_NEXT_INSTALMENT_FLAG: True}
-        new_dict.update(include_logic)
-    else:
-        new_dict = {DAYS_BEFORE_NEXT_INSTALMENT_FLAG: False}
-        new_dict.update(include_logic)
+    new_dict = {DAYS_BEFORE_NEXT_INSTALMENT_FLAG: DAYS_BEFORE_NEXT_INSTALMENT_FILTER in include_logic}
+    new_dict.update(include_logic)
     return new_dict
 
 
