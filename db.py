@@ -10,7 +10,12 @@ import util
 
 # Global Engine
 engine = create_engine(
-    URL(account=config.SF_ACCOUNT, user=config.SF_USER, password=config.SF_PASSWORD, database=config.SF_DATABASE),
+    URL(
+        account=config.SF_ACCOUNT,
+        user=config.SF_USER,
+        password=config.SF_PASSWORD,
+        database=config.SF_DATABASE,
+    ),
     poolclass=QueuePool,
     pool_size=5,
     max_overflow=10,
@@ -36,7 +41,7 @@ def fetch_raw_retry_loans_data():
         return None
 
 
-def general_save_to_snowflake(df: pd.DataFrame, table_name: str):
+def save_results(df: pd.DataFrame, table_name: str):
     try:
         with engine.connect() as sf_connection:
             df.to_sql(
@@ -47,7 +52,9 @@ def general_save_to_snowflake(df: pd.DataFrame, table_name: str):
                 index=False,
                 method=pd_writer,
             )
-            logger.info(f"Data saved to Snowflake table: {config.SF_SCHEMA}.{table_name}")
+            logger.info(
+                f"Data saved to Snowflake table: {config.SF_SCHEMA}.{table_name}"
+            )
     except Exception as e:
         logger.exception(f"Error saving data to Snowflake: {e}")
 
