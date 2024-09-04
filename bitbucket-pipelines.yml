@@ -4,7 +4,7 @@ definitions:
     pip: ~/.cache/pip
 pipelines:
   branches:
-    master:
+    main:
       - step:
           name: "Test"
           caches:
