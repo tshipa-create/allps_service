@@ -100,22 +100,38 @@ def save_allps_response_to_snowflake(
 def fetch_daily_monitoring_data():
     logger.info("Fetching daily monitoring data from Snowflake...")
     sql_query = """
-                SELECT
-                    CURRENT_DATE() AS MONITORING_DATE,
-                    COUNT(ID) AS COUNT_OF_ROWS,
-                    HOST,
-                    METHOD_NAME ,
-                    RESPONSE_CODE ,
-                    RESPONSE_MESSAGE
-                FROM
-                    PLANET42_LIVE_DB.DATA_TEAM.ALLPS_SERVICE_API_LOGS
-                WHERE
-                    REQUEST_DATE_UTC::DATE = CURRENT_DATE()
-                GROUP BY
-                    HOST,
-                    METHOD_NAME ,
-                    RESPONSE_CODE ,
-                    RESPONSE_MESSAGE
+        SELECT 
+            CURRENT_DATE() AS MONITORING_DATE
+            ,COUNT(*) AS COUNT_OF_ROWS
+            ,HOST
+            ,METHOD_NAME
+            ,RESPONSE_CODE
+            ,RESPONSE_MESSAGE
+        FROM (
+        SELECT
+            REQUEST_DATE_UTC
+            ,HOST
+            ,METHOD_NAME
+            ,RESPONSE_CODE
+            ,RESPONSE_MESSAGE
+        FROM PLANET42_LIVE_DB.DATA_TEAM.ALLPS_SERVICE_API_LOGS
+        UNION 
+        -- RETRIES PROCESSED THROUGH ALLPS_INSTALMENT_API
+        SELECT
+        CREATED_AT_UTC AS REQUEST_DATE_UTC
+        ,'https://iserv.amplifin.co.za/allpsws/allps.asmx' as HOST
+        ,'EditInstalment' as METHOD_NAME
+        ,REPLY_CD AS RESPONSE_CODE
+        ,REPLY_STR AS RESPONSE_MESSAGE 
+        FROM ODS_ALLPS_SA.EDIT_INSTALMENT_LOG
+        WHERE NEW_ACTION_DT IS NOT NULL
+        )
+        WHERE REQUEST_DATE_UTC::DATE = CURRENT_DATE()
+        GROUP BY
+            HOST,
+            METHOD_NAME,
+            RESPONSE_CODE,
+            RESPONSE_MESSAGE
                 """
     try:
         with engine.connect() as sf_connection:

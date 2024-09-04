@@ -5,12 +5,10 @@ import util
 from logger_config import logger
 from db import (
     fetch_raw_retry_loans_data,
-    fetch_daily_monitoring_data,
     save_results,
 )
 import boto3
 import config
-from slack_integration import slack_post_msg
 from raw_data_processing import (
     add_days_flag_to_include_logic_dict,
     calculate_days_before_next_instalment_flag,
@@ -128,9 +126,6 @@ def main():
         len(df_filtered), count_edit_instalments
     )
     allps_service_instance.close_asi()
-    if config.ENABLE_SLACK_NOTIFICATIONS:
-        df_monitoring = fetch_daily_monitoring_data()
-        slack_post_msg(df_monitoring)
 
 
 if __name__ == "__main__":
