@@ -29,6 +29,8 @@ class BaseTest(unittest.TestCase):
                 "ALLPS_NEW_TRACK_CODE": "07",
                 "SLACK_TIMEOUT": "60",
                 "ENABLE_SLACK_NOTIFICATIONS": "mock_enable",
+                "SLACK_TOKEN": "mock_slack_token",
+                "SLACK_CHANNEL_ID": "mock_slack_channel_id",
                 "ALLPS_RESPONSE_CODES_RETRY_LIST": "1800, 331",
                 "RAW_RETRY_LOANS_FILTERS_JSON": json.dumps(
                     {
