@@ -1,14 +1,22 @@
+import os
+from datetime import datetime
 import traceback
 import requests
 import config
 from logger_config import logger
 import pandas as pd
 from collections import defaultdict
+from slack_sdk import WebClient
+from slack_sdk.errors import SlackApiError
 
 
 def format_slack_message(df):
     grouped = (
-        df.groupby(["HOST", "METHOD_NAME", "RESPONSE_CODE", "RESPONSE_MESSAGE"])["COUNT_OF_ROWS"].sum().reset_index()
+        df.groupby(["HOST", "METHOD_NAME", "RESPONSE_CODE", "RESPONSE_MESSAGE"])[
+            "COUNT_OF_ROWS"
+        ]
+        .sum()
+        .reset_index()
     )
 
     summary = defaultdict(lambda: defaultdict(list))
@@ -17,12 +25,16 @@ def format_slack_message(df):
             (row["RESPONSE_CODE"], row["RESPONSE_MESSAGE"], row["COUNT_OF_ROWS"])
         )
 
-    message_lines = [f"*Daily API Monitoring Report for {df['MONITORING_DATE'].iloc[0]}*"]
+    message_lines = [
+        f"*Daily API Monitoring Report for {df['MONITORING_DATE'].iloc[0]}*"
+    ]
     for host, methods in summary.items():
         message_lines.append(f"*Host:* {host}")
         for method, responses in methods.items():
             message_lines.append(f"    • *Method:* {method}")
-            response_lines = [f"        ◦ `{resp[0]}`: {resp[2]} - _{resp[1]}_" for resp in responses]
+            response_lines = [
+                f"        ◦ `{resp[0]}`: {resp[2]} - _{resp[1]}_" for resp in responses
+            ]
             message_lines.extend(response_lines)
 
     message = "\n".join(message_lines)
@@ -34,11 +46,43 @@ def slack_post_msg(df: pd.DataFrame):
     slack_webhook_url = "https://hooks.slack.com/services/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"
     if not df.empty:
         formatted_message = format_slack_message(df)
-        message = {"channel": "#data_team_allps_service", "username": "awsbot", "text": formatted_message["text"]}
+        message = {
+            "channel": "#data_team_allps_service",
+            "username": "awsbot",
+            "text": formatted_message["text"],
+        }
         try:
-            response = requests.post(slack_webhook_url, json=message, timeout=config.SLACK_TIMEOUT)
-            logger.info(f"Slack message posted to {slack_webhook_url} with response: {response.text}")
+            response = requests.post(
+                slack_webhook_url, json=message, timeout=config.SLACK_TIMEOUT
+            )
+            logger.info(
+                f"Slack message posted to {slack_webhook_url} with response: {response.text}"
+            )
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
             logger.exception(f"Error posting message to Slack: {e}")
             traceback.print_exc()
+
+
+def slack_post_file(msg: str, key: str, df: pd.DataFrame):
+    client = WebClient(token=config.SLACK_TOKEN)
+    try:
+        dt: str = str(datetime.now())[:10]
+        files: list[dict] = []
+        df.to_csv(f"{key}_{dt}.csv", index=False)
+        files.append(
+            {
+                "file": f"./{key}_{dt}.csv",
+                "title": key,
+            }
+        )
+        client.files_upload_v2(
+            channels=config.SLACK_CHANNEL_ID,
+            initial_comment=msg,
+            file_uploads=files,
+        )
+    except SlackApiError as slack_exc:
+        logger.error("Error uploading file: %s", str(slack_exc))
+
+    for f in files:
+        os.remove(f["file"])

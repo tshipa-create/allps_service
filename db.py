@@ -141,3 +141,15 @@ def fetch_daily_monitoring_data():
     except Exception as e:
         logger.exception(f"Error fetching daily monitoring data: {e}")
         return None
+
+
+def find_retry_responses():
+    logger.info("Find retry responses...")
+    try:
+        with engine.connect() as sf_connection:
+            return pd.read_sql(
+                "select * from ODS_ALLPS_SA.VIEW_RETRY_RESPONSES", sf_connection
+            )
+    except Exception as e:
+        logger.exception(f"Error finding retry responses: {e}")
+        return None
