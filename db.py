@@ -10,7 +10,12 @@ import util
 
 # Global Engine
 engine = create_engine(
-    URL(account=config.SF_ACCOUNT, user=config.SF_USER, password=config.SF_PASSWORD, database=config.SF_DATABASE),
+    URL(
+        account=config.SF_ACCOUNT,
+        user=config.SF_USER,
+        password=config.SF_PASSWORD,
+        database=config.SF_DATABASE,
+    ),
     poolclass=QueuePool,
     pool_size=5,
     max_overflow=10,
@@ -36,7 +41,7 @@ def fetch_raw_retry_loans_data():
         return None
 
 
-def general_save_to_snowflake(df: pd.DataFrame, table_name: str):
+def save_results(df: pd.DataFrame, table_name: str):
     try:
         with engine.connect() as sf_connection:
             df.to_sql(
@@ -47,7 +52,9 @@ def general_save_to_snowflake(df: pd.DataFrame, table_name: str):
                 index=False,
                 method=pd_writer,
             )
-            logger.info(f"Data saved to Snowflake table: {config.SF_SCHEMA}.{table_name}")
+            logger.info(
+                f"Data saved to Snowflake table: {config.SF_SCHEMA}.{table_name}"
+            )
     except Exception as e:
         logger.exception(f"Error saving data to Snowflake: {e}")
 
@@ -93,22 +100,38 @@ def save_allps_response_to_snowflake(
 def fetch_daily_monitoring_data():
     logger.info("Fetching daily monitoring data from Snowflake...")
     sql_query = """
-                SELECT
-                    CURRENT_DATE() AS MONITORING_DATE,
-                    COUNT(ID) AS COUNT_OF_ROWS,
-                    HOST,
-                    METHOD_NAME ,
-                    RESPONSE_CODE ,
-                    RESPONSE_MESSAGE
-                FROM
-                    PLANET42_LIVE_DB.DATA_TEAM.ALLPS_SERVICE_API_LOGS
-                WHERE
-                    REQUEST_DATE_UTC::DATE = CURRENT_DATE()
-                GROUP BY
-                    HOST,
-                    METHOD_NAME ,
-                    RESPONSE_CODE ,
-                    RESPONSE_MESSAGE
+        SELECT 
+            CURRENT_DATE() AS MONITORING_DATE
+            ,COUNT(*) AS COUNT_OF_ROWS
+            ,HOST
+            ,METHOD_NAME
+            ,RESPONSE_CODE
+            ,RESPONSE_MESSAGE
+        FROM (
+        SELECT
+            REQUEST_DATE_UTC
+            ,HOST
+            ,METHOD_NAME
+            ,RESPONSE_CODE
+            ,RESPONSE_MESSAGE
+        FROM PLANET42_LIVE_DB.DATA_TEAM.ALLPS_SERVICE_API_LOGS
+        UNION 
+        -- RETRIES PROCESSED THROUGH ALLPS_INSTALMENT_API
+        SELECT
+        CREATED_AT_UTC AS REQUEST_DATE_UTC
+        ,'https://iserv.amplifin.co.za/allpsws/allps.asmx' as HOST
+        ,'EditInstalment' as METHOD_NAME
+        ,REPLY_CD AS RESPONSE_CODE
+        ,REPLY_STR AS RESPONSE_MESSAGE 
+        FROM ODS_ALLPS_SA.EDIT_INSTALMENT_LOG
+        WHERE NEW_ACTION_DT IS NOT NULL
+        )
+        WHERE REQUEST_DATE_UTC::DATE = CURRENT_DATE()
+        GROUP BY
+            HOST,
+            METHOD_NAME,
+            RESPONSE_CODE,
+            RESPONSE_MESSAGE
                 """
     try:
         with engine.connect() as sf_connection:
@@ -117,4 +140,16 @@ def fetch_daily_monitoring_data():
             return util.add_tz_to_df_date_cols(df)
     except Exception as e:
         logger.exception(f"Error fetching daily monitoring data: {e}")
+        return None
+
+
+def find_retry_responses():
+    logger.info("Find retry responses...")
+    try:
+        with engine.connect() as sf_connection:
+            return pd.read_sql(
+                "select * from ODS_ALLPS_SA.VIEW_RETRY_RESPONSES", sf_connection
+            )
+    except Exception as e:
+        logger.exception(f"Error finding retry responses: {e}")
         return None
