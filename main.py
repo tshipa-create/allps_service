@@ -106,7 +106,7 @@ def main():
                 "promissory_id": promissory_id,
                 "inst_num": install_num,
                 "amount": new_amt,
-                "new_action_dt": new_action_dt,
+                "new_action_dt": util.format_date_to_string(new_action_dt),
             }
 
             logger.info(f"Invoking allps_instalment_api lambda, payload: {payload}")
