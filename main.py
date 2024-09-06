@@ -91,7 +91,6 @@ def main():
         df.loc[index, "CNT_PCT"] = cnt_pct
         df.loc[index, "AMT_PCT"] = amt_pct
         df.loc[index, "OLD_AMT"] = old_amt
-        df.loc[index, "NEW_AMT"] = new_amt
 
         if amt_pct == 100:
             logger.info(
@@ -108,6 +107,8 @@ def main():
             logger.info(
                 f"Editing instalment for promissory_id: {promissory_id}, inst_num: {install_num} with new_action_dt: {new_action_dt} and with new_amount: {new_amt} ({amt_pct}%)"
             )
+
+            df.loc[index, "NEW_AMT"] = new_amt
 
             payload = {
                 "promissory_id": promissory_id,
