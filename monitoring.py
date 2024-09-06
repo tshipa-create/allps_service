@@ -9,7 +9,7 @@ def main():
     if config.ENABLE_SLACK_NOTIFICATIONS:
         logger.info("Running monitoring")
         df_monitoring = fetch_daily_monitoring_data()
-        if df_monitoring:
+        if df_monitoring is not None:
             slack_post_msg(df_monitoring)
 
         df_responses = find_retry_responses()
