@@ -70,6 +70,17 @@ def main():
             )
             continue
 
+        is_instalment_info_valid = util.validate_full_instalment_info(
+            status,
+            EXPECTED_INSTALMENT_STATUS,
+            inst_dt,  # pylint: disable=no-member
+        )
+        if not is_instalment_info_valid:
+            logger.info(
+                f"Skipping editing instalment for promissory_id: {promissory_id}, inst_num: {install_num}..."
+            )
+            continue
+
         # WRITE USED VALUES TO RAW DF
         cnt_pct = row["CNT_PCT"]
         amt_pct = row["AMT_PCT"]
@@ -81,17 +92,6 @@ def main():
         df.loc[index, "AMT_PCT"] = amt_pct
         df.loc[index, "OLD_AMT"] = old_amt
         df.loc[index, "NEW_AMT"] = new_amt
-
-        is_instalment_info_valid = util.validate_full_instalment_info(
-            status,
-            EXPECTED_INSTALMENT_STATUS,
-            inst_dt,  # pylint: disable=no-member
-        )
-        if not is_instalment_info_valid:
-            logger.info(
-                f"Skipping editing instalment for promissory_id: {promissory_id}, inst_num: {install_num}..."
-            )
-            continue
 
         if amt_pct == 100:
             logger.info(
