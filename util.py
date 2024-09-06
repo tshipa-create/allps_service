@@ -103,10 +103,7 @@ def add_tz_to_df_date_cols(df: pd.DataFrame):
 # AMT_PCT - share of total instalment amount to retry
 def add_split_info_cols(df: pd.DataFrame):
 
-    split_cfg = [
-        {"cnt_pct": 50, "amt_pct": 100},
-        {"cnt_pct": 50, "amt_pct": 50},
-    ]
+    split_cfg = [{"cnt_pct": 100, "amt_pct": 100}]
 
     df["CNT_PCT"] = None
     df["AMT_PCT"] = None
