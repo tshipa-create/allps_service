@@ -27,10 +27,14 @@ def main():
         config.RAW_RETRY_LOANS_FILTERS_JSON
     )
     df: DataFrame = calculate_days_before_next_instalment_flag(df, include_logic)
+    df["CNT_PCT"] = None
+    df["AMT_PCT"] = None
+    df["OLD_AMT"] = None
+    df["NEW_AMT"] = None
 
     df_filtered = filter_raw_retry_loans_data(
         df, config.RAW_RETRY_LOANS_FILTERS_JSON
-    ).reset_index(drop=True)
+    ).reset_index()
 
     if util.check_loans_data_fetch(df_filtered) is False:
         allps_service_instance.close_asi()
@@ -40,9 +44,6 @@ def main():
     count_edit_instalments = 0
 
     util.add_split_info_cols(df_filtered)
-
-    df_filtered["OLD_AMT"] = None
-    df_filtered["NEW_AMT"] = None
 
     for index, row in df_filtered.iterrows():
         logger.info("-" * 100)
@@ -69,11 +70,17 @@ def main():
             )
             continue
 
+        # WRITE USED VALUES TO RAW DF
+        cnt_pct = row["CNT_PCT"]
         amt_pct = row["AMT_PCT"]
         old_amt = int(amount)
         new_amt = int(old_amt * row["AMT_PCT"] / 100)
-        df_filtered.at[index, "OLD_AMT"] = old_amt
-        df_filtered.at[index, "NEW_AMT"] = new_amt
+
+        index = row["index"]
+        df.loc[index, "CNT_PCT"] = cnt_pct
+        df.loc[index, "AMT_PCT"] = amt_pct
+        df.loc[index, "OLD_AMT"] = old_amt
+        df.loc[index, "NEW_AMT"] = new_amt
 
         is_instalment_info_valid = util.validate_full_instalment_info(
             status,
