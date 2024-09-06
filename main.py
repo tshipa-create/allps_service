@@ -70,18 +70,6 @@ def main():
             )
             continue
 
-        # WRITE USED VALUES TO RAW DF
-        cnt_pct = row["CNT_PCT"]
-        amt_pct = row["AMT_PCT"]
-        old_amt = int(amount)
-        new_amt = int(old_amt * row["AMT_PCT"] / 100)
-
-        index = row["index"]
-        df.loc[index, "CNT_PCT"] = cnt_pct
-        df.loc[index, "AMT_PCT"] = amt_pct
-        df.loc[index, "OLD_AMT"] = old_amt
-        df.loc[index, "NEW_AMT"] = new_amt
-
         is_instalment_info_valid = util.validate_full_instalment_info(
             status,
             EXPECTED_INSTALMENT_STATUS,
@@ -92,6 +80,17 @@ def main():
                 f"Skipping editing instalment for promissory_id: {promissory_id}, inst_num: {install_num}..."
             )
             continue
+
+        # WRITE USED VALUES TO RAW DF
+        cnt_pct = row["CNT_PCT"]
+        amt_pct = row["AMT_PCT"]
+        old_amt = int(amount)
+        new_amt = int(old_amt * row["AMT_PCT"] / 100)
+
+        index = row["index"]
+        df.loc[index, "CNT_PCT"] = cnt_pct
+        df.loc[index, "AMT_PCT"] = amt_pct
+        df.loc[index, "OLD_AMT"] = old_amt
 
         if amt_pct == 100:
             logger.info(
@@ -108,6 +107,8 @@ def main():
             logger.info(
                 f"Editing instalment for promissory_id: {promissory_id}, inst_num: {install_num} with new_action_dt: {new_action_dt} and with new_amount: {new_amt} ({amt_pct}%)"
             )
+
+            df.loc[index, "NEW_AMT"] = new_amt
 
             payload = {
                 "promissory_id": promissory_id,
