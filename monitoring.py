@@ -15,13 +15,18 @@ def main():
         df_responses = find_retry_responses()
         if df_responses is not None:
             total = len(df_responses)
-            success: int = len(df_responses[df_responses["success"] == True])
-            rate = int(success / total * 100)
+            edited_df = df_responses[df_responses["amt_pct"].notnull()]
+            edited: int = len(edited_df)
+            success: int = len(edited_df[edited_df["success"] == True])
+            rate = int(success / edited * 100)
             msg = f"""
             *ALLPS instalment retry summary*
-            Total retries: {total}
-            Instalments successfully edited: {success}/{total} ({rate}%)
+            Total processed: {total}
+            Instalments edited: {edited}, skipped: {total - edited}
+            Instalments successfully edited: {success}/{edited} ({rate}%)
             """
+
+            print(msg)
             key = "VIEW_RETRY_RESPONSES"
 
             slack_post_file(msg, key, df_responses)
