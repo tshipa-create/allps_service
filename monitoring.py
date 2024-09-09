@@ -26,7 +26,6 @@ def main():
             Instalments successfully edited: {success}/{edited} ({rate}%)
             """
 
-            print(msg)
             key = "VIEW_RETRY_RESPONSES"
 
             slack_post_file(msg, key, df_responses)
