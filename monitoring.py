@@ -18,7 +18,9 @@ def main():
             edited_df = df_responses[df_responses["amt_pct"].notnull()]
             edited: int = len(edited_df)
             success: int = len(edited_df[edited_df["success"] == True])
-            rate = int(success / edited * 100)
+            rate = 0
+            if edited > 0:
+                rate = int(success / edited * 100)
             msg = f"""
             *ALLPS instalment retry summary*
             Total processed: {total}
