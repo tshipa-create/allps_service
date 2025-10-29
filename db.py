@@ -7,14 +7,37 @@ from snowflake.sqlalchemy import URL
 from sqlalchemy.pool import QueuePool
 from snowflake.connector.pandas_tools import pd_writer
 import util
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
+import boto3
+
+
+"""Setup Snowflake connection by retrieving private key from AWS SSM Parameter Store."""
+ssm = boto3.client('ssm', region_name='us-east-1')
+private_key_content = ssm.get_parameter(Name='/snowflake/connection_private_key', WithDecryption=True)['Parameter']['Value']
+private_key_passphrase = ssm.get_parameter(Name='/snowflake/connection_passphrase', WithDecryption=True)['Parameter']['Value']
+    
+p_key = serialization.load_pem_private_key(
+        private_key_content.encode('utf-8'),
+        password=private_key_passphrase.encode(),
+        backend=default_backend()
+    )
+    
+pkb = p_key.private_bytes(
+        encoding=serialization.Encoding.DER,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption()
+    )
+    
 
 # Global Engine
 engine = create_engine(
     URL(
         account=config.SF_ACCOUNT,
         user=config.SF_USER,
-        password=config.SF_PASSWORD,
+        private_key=pkb,
         database=config.SF_DATABASE,
+        role='SYSADMIN'
     ),
     poolclass=QueuePool,
     pool_size=5,
