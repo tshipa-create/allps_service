@@ -1,6 +1,3 @@
- ## `allps_service` README
-
-  ```markdown
   # ALLPS Instalment Retry Service
 
   Automated service that retries failed loan instalment payments in the ALLPS loan management system. Runs on a schedule, identifies instalments that failed
